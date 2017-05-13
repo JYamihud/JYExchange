@@ -262,7 +262,9 @@ def consoleinput(widget):
         except:
             Print("CONNECTION ERROR", True)
     
-    
+    elif text.startswith("SNAKE"):
+        Print("THE BITCHY PYTHON", True)
+        import snake
     # CONNECT
     
     elif text.startswith("CONNECT"):
