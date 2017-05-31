@@ -509,7 +509,7 @@ update = gtk.Button()
 
 updateicon = gtk.Image()
 updateicon.set_from_file("py_data/icons/save.png")
-updateblabel = gtk.Label("Update")
+updateblabel = gtk.Label("Localy Update")
 
 updatebuttonbox = gtk.HBox()
 updatebuttonbox.pack_start(updateicon, False)
@@ -520,6 +520,11 @@ update.add(updatebuttonbox)
 update.set_tooltip_text("Dowloading Avalable Version and updates to it\nRequire restart of the programm")
 update.set_sensitive(False)
 updatebox.pack_start(update, False)
+
+
+
+
+
 
 bigbox = gtk.HPaned()
 box1.pack_start(bigbox)
@@ -2233,4 +2238,96 @@ showdfiles()
 
 
 mainwindow.show_all()
+
+### Updater
+def update():
+    
+    import urllib2
+    
+    Print("GETTING UPDATE...")
+    
+    
+    updatefile = urllib2.urlopen("https://github.com/JYamihud/JYExchange/archive/master.zip")
+    updatefile = updatefile.read()
+    
+    Print("SAVING UPDATE...")
+    
+    tmpzip = open("../tmpzip.zip", "w")
+    tmpzip.write(updatefile)
+    tmpzip.close()
+    
+    Print("UNPACKING AND INSTALLING UPDATE...")
+    
+    thedir = os.getcwd()
+    
+    #os.system("rm -rf py_data")
+    
+    
+    #for i in os.listdir(thedir):
+        #os.remove(i)
+    
+    zipfile.ZipFile('../tmpzip.zip').extractall(thedir)
+    
+    os.system("mv "+thedir+"/JYExchange-master/* "+thedir+"/ --force")
+    os.system("rm -rf JYExchange-master")
+    
+    
+    os.system("rm -rf .git")
+    
+    Print("RESTART TO APPLY CHANGES!!!", True)
+    
+
+
+try:
+    
+    import urllib2
+
+    updatefile = urllib2.urlopen("https://raw.githubusercontent.com/JYamihud/JYExchange/master/UPDATES")
+    updatefile = updatefile.read() 
+    
+    
+    if float(updatefile.split("\n")[0]) > VERSION:
+        
+        Print("UPDATE AVALABLE !!! [VERSION: "+str(VERSION)+" AVAILABLE: "+updatefile.split("\n")[0]+" ]")
+        
+        #update window
+        
+        updwin = gtk.Window()
+        updwin.set_title("Update Available !!!")
+        updwin.set_position(gtk.WIN_POS_CENTER)
+        
+        updbox = gtk.VBox(False)
+        updwin.add(updbox)
+        
+        uplabel = gtk.Label(updatefile)
+        uplabel.modify_font(pango.FontDescription("Monospace"))
+        
+        
+        updbox.pack_start(uplabel, False)
+        
+        def on_update(widget):
+            updwin.destroy()
+            update()
+        
+        
+        updateb = gtk.Button("Update")
+        updateb.connect("clicked", on_update)
+        updbox.pack_start(updateb)        
+        
+        
+        
+        
+        updwin.show_all()
+        
+        
+except:
+    pass
+
+
+
+
+
+
+
+
 gtk.main()
