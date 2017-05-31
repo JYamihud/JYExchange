@@ -1,19 +1,28 @@
 0.4
+                            Download lists:
+    Now you finally can download a bunch of files in one click.
+there is a new uncloked feature (it was locked because the button
+didn't do anything before now). Just click donwload not on the file
+it self. But on the download on the top panel. And you will get
+all the list donwloaded... Cool isn't that?
 
-                    Faster folders:
+
+                            Faster folders:
 
      In the previous version of JYExchange you had a slow folders transfer
-due to the fact the it was zipping and unzipping folders for no reason.
-Now in version 0.3 the folders are not zipped, but transferred with a
+due to the fact that it was zipping and unzipping folders for no reason.
+Now in version 0.4 the folders are not zipped, but transferred with a
 info file. It will make an improvement of speed drastically.
-(NOTE: old version of folders sending will not be supported
-so update the JYExchange on both ends of the connection)
+
+(NOTE: There will be a support for the old way if the server or client on
+other side is older. But recomended to make at least a local update to 0.4
+for quicker folder transfer)
 
 __________________________________________________________________________ 
 
 0.3
 
-                     True updater:
+                             True updater:
 
      Before this you would update from the version on the second end.
 which is rediculas... Now you can do that through the github.
