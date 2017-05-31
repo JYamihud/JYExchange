@@ -13,7 +13,7 @@ import datetime
 import pango
 import zipfile
 
-VERSION = 0.21 # A software version for the updater
+VERSION = 0.3 # A software version for the updater
 
 def main_quit(widget):
     gtk.main_quit()
