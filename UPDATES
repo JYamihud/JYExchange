@@ -2,15 +2,15 @@
 
 Faster folders:
 
-In the previous version of JYExchange you had a slow folders transfer
-due to the fact the it was zipping and unzipping folders for no reason.
-Now in version 0.3 the folders are not zipped, but transferred with a
-info file. It will make an improvement of speed drastically.
-(NOTE: old version of folders sending will not be supported
-so update the JYExchange on both ends of the connection)
+    In the previous version of JYExchange you had a slow folders transfer
+    due to the fact the it was zipping and unzipping folders for no reason.
+    Now in version 0.3 the folders are not zipped, but transferred with a
+    info file. It will make an improvement of speed drastically.
+    (NOTE: old version of folders sending will not be supported
+    so update the JYExchange on both ends of the connection)
 
 True updater:
 
-Before this you would update from the version on the second end.
-which is rediculas... Now you can do that through the github.
-If new version published... The programm will notify you about the update.
+    Before this you would update from the version on the second end.
+    which is rediculas... Now you can do that through the github.
+    If new version published... The programm will notify you about the update.
