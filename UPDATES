@@ -1,4 +1,4 @@
-0.3
+0.4
 
                     Faster folders:
 
@@ -8,6 +8,10 @@ Now in version 0.3 the folders are not zipped, but transferred with a
 info file. It will make an improvement of speed drastically.
 (NOTE: old version of folders sending will not be supported
 so update the JYExchange on both ends of the connection)
+
+__________________________________________________________________________ 
+
+0.3
 
                      True updater:
 
