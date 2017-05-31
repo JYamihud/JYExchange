@@ -13,7 +13,7 @@ import datetime
 import pango
 import zipfile
 
-VERSION = 0.3 # A software version for the updater
+VERSION = 0.4 # A software version for the updater
 
 def main_quit(widget):
     gtk.main_quit()
@@ -506,6 +506,10 @@ tickbox.pack_start(ticksbutton)
 
 tickbox.pack_end(tickl2, False)
 
+
+
+
+
 updateframe = gtk.Frame("Local Update")
 settingsbox.pack_end(updateframe, False)
 
@@ -532,9 +536,44 @@ update.set_sensitive(False)
 updatebox.pack_start(update, False)
 
 
+globalupdateframe = gtk.Frame("GitHub Update")
+settingsbox.pack_end(globalupdateframe, True)
 
+def on_updatelist(widget):
+    updwin = gtk.Window()
+    updwin.set_title("Updates Log ["+os.getcwd()+"/UPDATES]")
+    updwin.set_position(gtk.WIN_POS_CENTER)
+    
+    updbox = gtk.VBox(False)
+    updwin.add(updbox)
+    
+    updscroll = gtk.ScrolledWindow()
+    updscroll.set_size_request(800,400)
+    
+    updatefile = open("UPDATES", "r")
+    updatefile = updatefile.read()
+    
+    uplabel = gtk.Label(updatefile)
+    uplabel.modify_font(pango.FontDescription("Monospace"))
+    updscroll.add_with_viewport(uplabel)
+    
+    updbox.pack_start(updscroll, False)
+    
+    updwin.show_all()
+    
+gitdatebox = gtk.HBox(False)
+globalupdateframe.add(gitdatebox)
 
+updateslist = gtk.Button("View Updates Log")
+updateslist.connect("clicked", on_updatelist)
+gitdatebox.pack_start(updateslist)
 
+def on_globalupdate(w):
+    update()
+globalupdate = gtk.Button("Update")
+globalupdate.connect("clicked", on_globalupdate)
+globalupdate.set_sensitive(False)
+gitdatebox.pack_start(globalupdate)
 
 bigbox = gtk.HPaned()
 box1.pack_start(bigbox)
@@ -2298,6 +2337,8 @@ try:
     
     if float(updatefile.split("\n")[0]) > VERSION:
         
+        globalupdate.set_sensitive(True)
+        
         Print("UPDATE AVALABLE !!! [VERSION: "+str(VERSION)+" AVAILABLE: "+updatefile.split("\n")[0]+" ]")
         
         #update window
@@ -2309,11 +2350,15 @@ try:
         updbox = gtk.VBox(False)
         updwin.add(updbox)
         
+        updscroll = gtk.ScrolledWindow()
+        updscroll.set_size_request(800,400)
+        
+        
         uplabel = gtk.Label(updatefile)
         uplabel.modify_font(pango.FontDescription("Monospace"))
+        updscroll.add_with_viewport(uplabel)
         
-        
-        updbox.pack_start(uplabel, False)
+        updbox.pack_start(updscroll, False)
         
         def on_update(widget):
             updwin.destroy()
