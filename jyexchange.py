@@ -13,7 +13,7 @@ import datetime
 import pango
 import zipfile
 
-VERSION = 0.3 # A software version for the updater
+VERSION = 0.21 # A software version for the updater
 
 def main_quit(widget):
     gtk.main_quit()
@@ -262,6 +262,9 @@ def consoleinput(widget):
         except:
             Print("CONNECTION ERROR", True)
     
+    elif text.startswith("UPDATE"):
+        update()
+    
     elif text.startswith("SNAKE"):
         Print("THE BITCHY PYTHON", True)
         import snake
@@ -285,6 +288,8 @@ def consoleinput(widget):
         Print("HELP! \n"\
              +"SAY: argument     - sending message\n"\
              +"CONNECT           - connecting to IP, PORT specified at the top\n"\
+             +"UPDATE            - update the software using github link\n"\
+             +"SNAKE             - play snake (works just ones during runtime)\n"\
              +"PYTHON: argument  - executes python command and returns the value\n"\
              +"SAVE              - saving text from this console to .txt file at\n"\
              +"                    a directory specified for Dowloading.\n"\
@@ -401,6 +406,11 @@ def sayyellow(widget):
     
     elif text.startswith("HELP"):
         widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#2222FF"))
+    
+    elif text.startswith("UPDATE"):
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+    elif text.startswith("SNAKE"):
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
     
     elif text == "PYTHON:":
         
