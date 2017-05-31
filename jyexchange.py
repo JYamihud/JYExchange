@@ -564,13 +564,23 @@ def on_updatelist(widget):
 gitdatebox = gtk.HBox(False)
 globalupdateframe.add(gitdatebox)
 
-updateslist = gtk.Button("View Updates Log")
+updateslist = gtk.Button("View Local Updates Log")
 updateslist.connect("clicked", on_updatelist)
 gitdatebox.pack_start(updateslist)
 
 def on_globalupdate(w):
     update()
-globalupdate = gtk.Button("Update")
+
+
+
+globalupdate = gtk.Button()
+globalupdatebox = gtk.HBox(False)
+globalupdateicon = gtk.Image()
+globalupdateicon.set_from_file("py_data/icons/save.png")
+globalupdatebox.pack_start(globalupdateicon, False)
+globalupdatebox.pack_start(gtk.Label("GitHub Update"), True)
+globalupdate.add(globalupdatebox)
+
 globalupdate.connect("clicked", on_globalupdate)
 globalupdate.set_sensitive(False)
 gitdatebox.pack_start(globalupdate)
@@ -1751,6 +1761,42 @@ dpasswodbutton.connect("clicked", seedpassword)
 dpassbox.pack_start(dpasswodbutton, False)
 
 
+
+def download_all(w):
+    
+    w.set_sensitive(False)
+    
+    def do_download_all(w):
+        
+        for i in dfiles[1:]:
+            url, name, lock, folder, percent = i
+            
+            while DOWNLOADING == True: 
+                if DOWNLOADING == False:
+                    break
+            
+            REQUEST_DOWLOAD(url)
+        
+        w.set_sensitive(True)
+        
+    client2 = threading.Thread(target=do_download_all, args=[w])
+    client2.daemon = True
+    client2.start()
+    
+    
+
+downloadall = gtk.Button()
+downloadallimage = gtk.Image()
+downloadallimage.set_from_file("py_data/icons/save.png")
+downloadall.add(downloadallimage)
+downloadall.connect("clicked", download_all)
+
+dpassbox.pack_end(downloadall, False)
+
+
+
+
+
 dscroller = gtk.ScrolledWindow()
 cbox1.pack_start(dscroller)
 
@@ -2034,15 +2080,27 @@ def Drec_thread(url, updating=False):
     
     except:
         raise
-
+        global DOWNLOADING
+        DOWNLOADING = False
+    
+    global DOWNLOADING
+    DOWNLOADING = False
+    
+    
+DOWNLOADING = False
 def REQUEST_DOWLOAD(url, updating=False):
     
     
-    
-    client2 = threading.Thread(target=Drec_thread, args=[url, updating])
-    client2.daemon = True
-    client2.start()
-
+    if DOWNLOADING == False:
+        global DOWNLOADING
+        DOWNLOADING = True
+        
+        
+        client2 = threading.Thread(target=Drec_thread, args=[url, updating])
+        client2.daemon = True
+        client2.start()
+    else:
+        return "WAIT"
 def dowload_forbuttons(widget, url):
     REQUEST_DOWLOAD(url)
 
@@ -2295,17 +2353,33 @@ def update():
     
     Print("GETTING UPDATE...")
     
+    refreshprogress.set_fraction(0.25)
+    
+    while gtk.events_pending():
+        gtk.main_iteration_do(False)
+    
+    
     
     updatefile = urllib2.urlopen("https://github.com/JYamihud/JYExchange/archive/master.zip")
     updatefile = updatefile.read()
     
     Print("SAVING UPDATE...")
     
+    refreshprogress.set_fraction(0.5)
+    
+    while gtk.events_pending():
+        gtk.main_iteration_do(False)
+    
     tmpzip = open("../tmpzip.zip", "w")
     tmpzip.write(updatefile)
     tmpzip.close()
     
     Print("UNPACKING AND INSTALLING UPDATE...")
+    
+    refreshprogress.set_fraction(0.7)
+    
+    while gtk.events_pending():
+        gtk.main_iteration_do(False)
     
     thedir = os.getcwd()
     
@@ -2325,7 +2399,7 @@ def update():
     
     Print("RESTART TO APPLY CHANGES!!!", True)
     
-
+    refreshprogress.set_fraction(0)
 
 try:
     
@@ -2362,6 +2436,10 @@ try:
         
         def on_update(widget):
             updwin.destroy()
+            
+            while gtk.events_pending():
+                gtk.main_iteration_do(False)
+            
             update()
         
         
