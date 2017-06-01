@@ -61,7 +61,7 @@ def zip_folder(folder_path, output_path):
 
 mainwindow = gtk.Window()
 mainwindow.connect("destroy", main_quit)
-mainwindow.set_title("J.Y. EXCHANGE ")
+mainwindow.set_title("J.Y. EXCHANGE       "+str(VERSION))
 mainwindow.set_default_size(500, 500)
 mainwindow.set_position(gtk.WIN_POS_CENTER)
 #mainwindow.maximize()
@@ -519,7 +519,7 @@ updateframe.add(updatebox)
 updatelabel = gtk.Label("Version :"+str(VERSION)+" Avalable: Non ")
 updatebox.pack_start(updatelabel, False)
 
-update = gtk.Button()
+lupdate = gtk.Button()
 
 updateicon = gtk.Image()
 updateicon.set_from_file("py_data/icons/save.png")
@@ -529,11 +529,11 @@ updatebuttonbox = gtk.HBox()
 updatebuttonbox.pack_start(updateicon, False)
 updatebuttonbox.pack_start(updateblabel, False)
 
-update.add(updatebuttonbox)
+lupdate.add(updatebuttonbox)
 
-update.set_tooltip_text("Dowloading Avalable Version and updates to it\nRequire restart of the programm")
-update.set_sensitive(False)
-updatebox.pack_start(update, False)
+lupdate.set_tooltip_text("Dowloading Avalable Version and updates to it\nRequire restart of the programm")
+lupdate.set_sensitive(False)
+updatebox.pack_start(lupdate, False)
 
 
 globalupdateframe = gtk.Frame("GitHub Update")
@@ -564,11 +564,23 @@ def on_updatelist(widget):
 gitdatebox = gtk.HBox(False)
 globalupdateframe.add(gitdatebox)
 
-updateslist = gtk.Button("View Local Updates Log")
+updateslist = gtk.Button()
+updateslisticon = gtk.Image()
+updateslisticon.set_from_file("py_data/icons/unknown.png")
+updateslistbox = gtk.HBox(False)
+updateslist.add(updateslistbox)
+updateslistbox.pack_start(updateslisticon, False)
+updateslistbox.pack_start(gtk.Label("Local Version Features"), True)
+
 updateslist.connect("clicked", on_updatelist)
 gitdatebox.pack_start(updateslist)
 
 def on_globalupdate(w):
+    w.set_sensitive(False)
+    while gtk.events_pending():
+        gtk.main_iteration_do(False)
+    
+    
     update()
 
 
@@ -823,6 +835,90 @@ def servering():
                                     break
                             
                             # IF IT'S FOLDER
+                            
+                            elif r == "REQUEST_FOLDER_DATA":
+                                
+                                walk = os.walk(rurl[7:])
+                                tmpwalk = []
+                                for i in walk:
+                                    tmpwalk.append(i)
+                                
+                                walk = tmpwalk
+                                
+                                ourdirlist = ""
+                                ourfilelist = ""
+                                
+                                for p in walk:
+                                    ourdirlist = ourdirlist+"\n"+p[0]
+                                    
+                                    for f in p[-1]:
+                                        ourfilelist = ourfilelist+"\n"+p[0]+"/"+f
+                                    
+                                ourdirlist = ourdirlist[1:]
+                                ourfilelist = ourfilelist[1:]
+                                
+                                print ourfilelist
+                                print
+                                
+                                theirdirlist = ""
+                                theirfilelist = ""
+                                
+                                for p in ourdirlist.split("\n"):
+                                    theirdirlist = theirdirlist +"\n"+ p[ourdirlist.split("\n")[0].rfind("/"):]
+                                
+                                for p in ourfilelist.split("\n"):
+                                    theirfilelist = theirfilelist +"\n"+ p[ourdirlist.split("\n")[0].rfind("/"):]
+                                 
+                                print theirfilelist
+                                print
+                                
+                                theirdirlist = theirdirlist[1:]
+                                
+                                c.send( str(len(theirdirlist)) )
+                                
+                                c.recv(1024)
+                                
+                                c.send( theirdirlist )
+                                
+                                c.recv(1024)
+                                
+                                c.send(str(len(theirfilelist)))
+                                
+                                c.recv(1024)
+                                
+                                c.send( theirfilelist )
+                                
+                                c.recv(1024)
+                                
+                                #sizing the folder
+                                
+                                size = 0
+                                for p in ourfilelist.split("\n"):
+                                    size = size + os.path.getsize(p)
+                                    
+                                c.send(str(size))
+                                
+                                for p in ourfilelist.split("\n"):
+                                    
+                                    c.recv(1024)
+                                    
+                                    c.send(str(os.path.getsize(p)))
+                                    
+                                    c.recv(1024)
+                                    
+                                    fsource = open(p, 'r')
+                                        
+                                    while True:
+                                        c.send(fsource.read(524288))
+                                        
+                                        answer = c.recv(4)
+                                        
+                                        
+                                        if answer == "MORE":
+                                            continue
+                                        else:
+                                            break
+                                
                             elif r == "REQUEST_ZIP":
                                 
                                 zip_folder(rurl[7:].replace("%20", " "), 'temp.zip')
@@ -1524,12 +1620,12 @@ def REFRESH_REQUEST():
             Print("FROM SERVER "+str(dip)+" RECIEVED : FILES LIST ["+str(len(dfiles))+"]")
                 
             global updatelabel
-            global update
+            global lupdate
             
             
             updatelabel.set_text("Version :"+str(VERSION)+" Avalable: "+dfiles[0][1])
-            update.set_sensitive(True)
-            update.connect("clicked", lambda w: REQUEST_DOWLOAD(dfiles[0][0], True))
+            lupdate.set_sensitive(True)
+            lupdate.connect("clicked", lambda w: REQUEST_DOWLOAD(dfiles[0][0], True))
             
             
             
@@ -1540,7 +1636,7 @@ def REFRESH_REQUEST():
             except:
                 pass
     except:
-        Print("NO CONNECTION ESTABLISHED PLEASE CONNECT TO THE SERVER", True)
+        #Print("NO CONNECTION ESTABLISHED PLEASE CONNECT TO THE SERVER", True)
         raise
     
 CONNECTED = False
@@ -1961,59 +2057,50 @@ def Drec_thread(url, updating=False):
             
             elif r == "FOLDER":
                 
-                client.send("REQUEST_ZIP")
                 
-                r = client.recv(1024)
-                
-                Print("WAITING TO REQUESTED FOLDER'S ZIP")
-                
-                if r == "ZIP_DONE":
+                if float(dfiles[0][1]) > 0.3:
+                    client.send("REQUEST_FOLDER_DATA")
                     
-                    client.send("REQUEST_ZIP_SIZE")
+                    dataamount = client.recv(1024)
+                    
+                    client.send("OK")
+                    
+                    folderdata = ""
+                    
+                    while len(folderdata) <= int(dataamount)-1:
+                        folderdata = folderdata + client.recv(1024)
                     
                     
-                    SIZE = client.recv(1024)
-                
-                    Print("RECIEVED ZIP SIZE : "+SIZE)
-                    print "RECIEVED ZIP SIZE : "+SIZE
+                    saveurl = dfolrerentry.get_text()
                     
-                    if updating == False:
+                    Print("GOT FOLDER DATA\nMAKING FOLDERS\n"+folderdata)
                     
-                        saveurl = dfolrerentry.get_text()+url[7:].replace("%20", " ")[url[7:].replace("%20", " ").rfind("/"):]
-                    else:
+                    for p in folderdata.split("\n"):
+                        try:
+                            os.mkdir(saveurl+p)
+                        except:
+                            pass
                         
-                        if url == curwpf:
-                            
-                            Print("ERROR TRYING TO REWRITE THE SOURCE FILE", True)
-                            
-                            client.send("CANCEL")
-                            
-                            buttonlock(True)
-                            
-                            return
-                        else:
-                            saveurl = os.getcwd()
+                    Print("FOLDERS BEEN CREATED, REQUESTING FILES LIST")
+                    
+                    client.send("OK")
+                    
+                    dataamount = client.recv(1024)
+                    
+                    client.send("OK")
+                    
+                    filedata = ""
+                    
+                    while len(filedata) <= int(dataamount)-1:
+                        filedata = filedata + client.recv(1024)
                     
                     
                     
-                    client.send("REQUEST_ZIP_BINARY")
+                    client.send("SIZE?")
                     
+                    foldersize = client.recv(1024)
                     
-                    #### SAVING ####
-                    
-                    
-                    # url[7:].replace("%20", " ")
-                    
-                    
-                    Print("DOWLOADING ZIPPED FOLDER AT:"+saveurl)
-                    
-                    
-                    savefile = open('temp_recv.zip', "w")
-                    savefile.close()
-                    
-                    
-                    
-                    RA = 0
+                    Print( "DOWNLOADING FILES: \n"+filedata )
                     
                     #progress bar stuff
                     
@@ -2021,44 +2108,162 @@ def Drec_thread(url, updating=False):
                     progress.grab_add()
                     
                     
-                    while True:
+                    for n, p in enumerate(filedata.split("\n")[1:]):
                         
+                        print
+                        print p
+                        print
                         
+                        client.send("FILE?")
                         
-                        savefile = open('temp_recv.zip', "ab")
-                        savefile.write(client.recv(524288))
+                        SIZE = client.recv(1024)
                         
+                        client.send("OK")
+                        
+                        Print("DOWLOADING AT:"+saveurl+p)
+                
+                        print saveurl+p
+                        savefile = open(saveurl+p, "w")
                         savefile.close()
                         
                         
-                        #RA = RA + 1024
                         
-                        progress.set_fraction(float(os.path.getsize(os.getcwd()+'/temp_recv.zip'))/float(SIZE))
-                        progress.set_text("Dowloaded "+str(int(os.path.getsize(os.getcwd()+'/temp_recv.zip')/524288))+" From "+str(int(int(SIZE)/1024))+ " KB ")
+                        RA = 0
                         
-                        while gtk.events_pending():
-                            gtk.main_iteration_do(False)
                         
-                        if os.path.getsize(os.getcwd()+'/temp_recv.zip') >= int(SIZE):
+                        
+                        
+                        while True:
                             
-                            saveurl = saveurl[:saveurl.rfind("/")+1]
+                            savefile = open(saveurl+p, "ab")
+                            savefile.write(client.recv(524288))
+                            savefile.close()
                             
-                            zipfile.ZipFile('temp_recv.zip').extractall(saveurl)
                             
-                            os.remove('temp_recv.zip')
-                            client.send("STOP")
-                            break
-                        else:
-                            client.send("MORE")
-                    
+                            #RA = RA + 1024
+                            
+                            progress.set_fraction(float(os.path.getsize(saveurl+p))/float(SIZE))
+                            #progress.set_text("Dowloaded "+str(int(os.path.getsize(saveurl)/524288/2))+" From "+str(int(int(SIZE)/524288/2))+ " MB ")
+                            
+                            while gtk.events_pending():
+                                gtk.main_iteration_do(False)
+                            
+                            if os.path.getsize(saveurl+p) >= int(SIZE):
+                                client.send("STOP")
+                                break
+                            else:
+                                client.send("MORE")
+                           
+                            
+                        savefile.close()
                     progress.set_fraction(0)
                     progress.set_text("")
                     progress.grab_remove()
                     
-                    Print("FILE IS FINISHED DOWNLOADING")
-                    savefile.close()
+                    Print("FILES ARE FINISHED DOWNLOADING")
                     
-                
+                        
+                        
+                    
+                else:    
+                    client.send("REQUEST_ZIP")
+                    
+                    r = client.recv(1024)
+                    
+                    Print("WAITING TO REQUESTED FOLDER'S ZIP")
+                    
+                    if r == "ZIP_DONE":
+                        
+                        client.send("REQUEST_ZIP_SIZE")
+                        
+                        
+                        SIZE = client.recv(1024)
+                    
+                        Print("RECIEVED ZIP SIZE : "+SIZE)
+                        print "RECIEVED ZIP SIZE : "+SIZE
+                        
+                        if updating == False:
+                        
+                            saveurl = dfolrerentry.get_text()+url[7:].replace("%20", " ")[url[7:].replace("%20", " ").rfind("/"):]
+                        else:
+                            
+                            if url == curwpf:
+                                
+                                Print("ERROR TRYING TO REWRITE THE SOURCE FILE", True)
+                                
+                                client.send("CANCEL")
+                                
+                                buttonlock(True)
+                                
+                                return
+                            else:
+                                saveurl = os.getcwd()
+                        
+                        
+                        
+                        client.send("REQUEST_ZIP_BINARY")
+                        
+                        
+                        #### SAVING ####
+                        
+                        
+                        # url[7:].replace("%20", " ")
+                        
+                        
+                        Print("DOWLOADING ZIPPED FOLDER AT:"+saveurl)
+                        
+                        
+                        savefile = open('temp_recv.zip', "w")
+                        savefile.close()
+                        
+                        
+                        
+                        RA = 0
+                        
+                        #progress bar stuff
+                        
+                        progress = dtoolsvbox.get_data("progress")
+                        progress.grab_add()
+                        
+                        
+                        while True:
+                            
+                            
+                            
+                            savefile = open('temp_recv.zip', "ab")
+                            savefile.write(client.recv(524288))
+                            
+                            savefile.close()
+                            
+                            
+                            #RA = RA + 1024
+                            
+                            progress.set_fraction(float(os.path.getsize(os.getcwd()+'/temp_recv.zip'))/float(SIZE))
+                            progress.set_text("Dowloaded "+str(int(os.path.getsize(os.getcwd()+'/temp_recv.zip')/524288))+" From "+str(int(int(SIZE)/1024))+ " KB ")
+                            
+                            while gtk.events_pending():
+                                gtk.main_iteration_do(False)
+                            
+                            if os.path.getsize(os.getcwd()+'/temp_recv.zip') >= int(SIZE):
+                                
+                                saveurl = saveurl[:saveurl.rfind("/")+1]
+                                
+                                zipfile.ZipFile('temp_recv.zip').extractall(saveurl)
+                                
+                                os.remove('temp_recv.zip')
+                                client.send("STOP")
+                                break
+                            else:
+                                client.send("MORE")
+                        
+                        progress.set_fraction(0)
+                        progress.set_text("")
+                        progress.grab_remove()
+                        
+                        Print("FILE IS FINISHED DOWNLOADING")
+                        savefile.close()
+                        
+                    
             elif r == "ACCESS DENIED":
                 
                 Print("ACCES TO THE FILE/FOLDER IS DENIED", True)
