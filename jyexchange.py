@@ -13,7 +13,7 @@ import datetime
 import pango
 import zipfile
 
-VERSION = 0.4 # A software version for the updater
+VERSION = 0.41 # A software version for the updater
 
 def main_quit(widget):
     gtk.main_quit()
@@ -904,6 +904,11 @@ def servering():
                                     
                                     c.send(str(os.path.getsize(p)))
                                     
+                                    Print("SENDING FILE: "+p+" TO CLIENT")
+                                    
+                                    while gtk.events_pending():
+                                        gtk.main_iteration_do(False)
+                                        
                                     c.recv(1024)
                                     
                                     fsource = open(p, 'r')
@@ -918,6 +923,7 @@ def servering():
                                             continue
                                         else:
                                             break
+                                Print("FOLDER FINISHED UPLOADING")
                                 
                             elif r == "REQUEST_ZIP":
                                 
