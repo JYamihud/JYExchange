@@ -1,6 +1,27 @@
+0.50
+
+                     BUG FIXED! Unsinc while merging
+                     
+    There was a mistake in the new feature of merging folder. This
+feature is temporarely substituting an automatic analogous. It's
+checking if the file (from the folder) already exists... And if yes
+checks if the size is the same as on the Server. If it's both exist
+and the size is the same... It's Skippes the file. If not downloads
+the new version from server. This is now done automatically.
+    WARNING ! REQUAIERS UPDATE ON BOTH SIDES.
+    
+                     FOLDERS PROGRESS DOUBLE WIDGET
+                     
+    Now you can see both progress of current file and the whole folder
+at the progress widget on the top in the same time. There been done a
+clever way to do so... I hope you'll like it.
+
+
+__________________________________________________________________________
+
 0.42
 
-                     BUG FUXED! 0 bite files:
+                     BUG FIXED! 0 bite files:
                 
     The was a problem with files less then 1 bite in size.
 The sender tried to send the first couple bites from it...
