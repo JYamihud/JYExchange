@@ -13,7 +13,7 @@ import datetime
 import pango
 import zipfile
 
-VERSION = 0.42 # A software version for the updater
+VERSION = 0.5 # A software version for the updater
 
 def main_quit(widget):
     gtk.main_quit()
@@ -744,97 +744,7 @@ def servering():
                     c.send(amount)
                     
                 
-                elif r == "MERGELIST_REQUEST":
-                    
-                    #HEREHKHJKHJKHKJHHKHJKHKHJKHJKHJKHKJHJKHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-                    
-                    c.send("REQUEST_URL")
-                    
-                    print "SERVER sent REQUEST_URL"
-                    
-                    
-                    rurl = c.recv(1024)
-                    
-                    print "SERVER recv RURL"
-                    
-                    walk = os.walk(rurl[7:])
-                    tmpwalk = []
-                    for i in walk:
-                        tmpwalk.append(i)
-                    
-                    walk = tmpwalk
-                    
-                    ourdirlist = ""
-                    ourfilelist = ""
-                    
-                    for p in walk:
-                        ourdirlist = ourdirlist+"\n"+p[0]
-                        
-                        for f in p[-1]:
-                            ourfilelist = ourfilelist+"\n"+p[0]+"/"+f
-                        
-                    ourdirlist = ourdirlist[1:]
-                    ourfilelist = ourfilelist[1:]
-                    
-                    print ourfilelist
-                    print ourdirlist
-                    print
-                    
-                    theirdirlist = ""
-                    theirfilelist = ""
-                    
-                    for p in ourdirlist.split("\n"):
-                        theirdirlist = theirdirlist +"\n"+ p[ourdirlist.split("\n")[0].rfind("/"):]
-                    
-                    for p in ourfilelist.split("\n"):
-                        theirfilelist = theirfilelist +"\n"+ str(os.path.getsize(p))+ "|" + p[ourdirlist.split("\n")[0].rfind("/"):]
-                     
-                    print theirfilelist
-                    print theirdirlist
-                    
-                    theirdirlist = theirdirlist[1:]
-                    
-                    c.send( str(len(theirdirlist)) )
-                    
-                    print "SERVER  sent length of theirdirlist"
-                    
-                    print c.recv(1024)
-                    
-                    c.send(theirdirlist)
-                    
-                    print "SERVER sent theirdirlist"
-                    
-                    c.recv(1024)
-                    
-                    c.send(str(len(theirfilelist)))
-                    
-                    c.recv(1024)
-                    
-                    c.send(theirfilelist)
-                    
-                    while True:
-                        
-                        r = c.recv(1024)
-                        
-                        if r.startswith("GET "):
-                        
-                            filepath = ourfilelist.split("\n")[int(r[4:])]
-                            sendfile = open(filepath, "r")
-                            
-                            while True:
-                                c.send(sendfile.read(524288))
-                                
-                                answer = c.recv(4)
-                                
-                                
-                                if answer == "MORE":
-                                    continue
-                                else:
-                                    break
-                        elif r == "STOP":
-                            
-                            break
-                        
+                
                     
                 elif r == "REQUEST_FILES_LIST":
                     
@@ -1012,21 +922,26 @@ def servering():
                                     
                                     if os.path.getsize(p) != 0:
                                         
-                                        c.recv(1024)
+                                        ok = c.recv(2)
                                         
-                                        fsource = open(p, 'r')
-                                            
-                                        while True:
-                                            c.send(fsource.read(524288))
-                                            
-                                            answer = c.recv(4)
+                                        if ok == "OK":
                                             
                                             
-                                            if answer == "MORE":
-                                                continue
-                                            else:
-                                    
-                                                break
+                                            fsource = open(p, 'r')
+                                                
+                                            while True:
+                                                c.send(fsource.read(524288))
+                                                
+                                                answer = c.recv(4)
+                                                
+                                                
+                                                if answer == "MORE":
+                                                    continue
+                                                else:
+                                        
+                                                    break
+                                        else:
+                                            continue
                                     else:
                                         
                                         print "SEVER BROKE BECAUSE FILE IS EMPTY"
@@ -2234,6 +2149,24 @@ def Drec_thread(url, updating=False):
                     
                     for n, p in enumerate(filedata.split("\n")[1:]):
                         
+                        try:
+                            pp = n / float(len(filedata.split("\n")[1:])) * 100
+                        except:
+                            pp = 0.0
+                        
+                        
+                        ppp = ""
+                        
+                        for num in range(20):
+                            
+                            
+                            if (float(num)/2)*10 > pp:
+                                ppp = ppp + "○"
+                            else:
+                                ppp = ppp + "●"
+                        
+                        progress.set_text("▾ " + str(n)+" ▵ "+str(len(filedata.split("\n")[1:]))+" "+ppp+" "+str(int(pp))+"%")
+                        
                         print
                         print p
                         print
@@ -2243,20 +2176,40 @@ def Drec_thread(url, updating=False):
                         SIZE = client.recv(1024)
                         
                         if int(SIZE) == 0:
+                            print saveurl+p
+                            savefile = open(saveurl+p, "w")
+                            savefile.close()
                             Print("EMPTY FILE")
                             continue
                             
                         if int(SIZE) != 0:
                             
                             
-                            client.send("OK")
                             
-                            Print("DOWLOADING AT:"+saveurl+p)
-                    
+                            
+                            
+                            # OPTIMIZATION FOR FILES THAT ARE ALREADY ON THE THING
+                            exist = False
+                            try:
+                                open(saveurl+p, "r")
+                                exist = True
+                            except:
+                                pass
+                                
+                            if exist == True:
+                                if os.path.getsize(saveurl+p) == int(SIZE):
+                                    
+                                    client.send("NO")
+                                    
+                                    Print ("SKIPPING : "+saveurl+p)
+                                    continue
+                            
+                            
+                            client.send("OK")
                             print saveurl+p
                             savefile = open(saveurl+p, "w")
                             savefile.close()
-                            
+                            Print("DOWLOADING AT:"+saveurl+p)
                             
                             
                             RA = 0
@@ -2635,554 +2588,6 @@ def showdfiles():
         
         com = "filebox_"+n+".pack_end(dowloadas_"+n+", False)"
         exec(com) in globals(), locals()
-        
-        
-        def merge_forbuttons(widget, url):
-            
-            df = dfolrerentry.get_text()
-            
-                
-            
-            mergedialog = gtk.Dialog("Merge Folder", None, 0, (gtk.STOCK_EXECUTE,  gtk.RESPONSE_APPLY, 
-                         gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
-            
-            mergedialog.set_size_request(550, 500)
-            
-            mergebox = mergedialog.get_child()
-            
-            # change folder ( if the automatic got fucked )
-            
-            mergefolderpath = gtk.Entry()
-            mergefolderpath.set_text(df)
-            
-            changefbox = gtk.HBox(False)
-            
-            mergebox.pack_start(changefbox, False)
-            
-            changefbox.pack_start(mergefolderpath)
-            
-            def change_further(widget, df, url):
-                
-                chosedfolder.set_sensitive(False)
-    
-                addfolderbuttondialog = gtk.FileChooserDialog("Merging Folder Destination ...",
-                                                 None,
-                                                 gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                                                (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                                                 gtk.STOCK_OPEN, gtk.RESPONSE_OK))
-                addfolderbuttondialog.set_default_response(gtk.RESPONSE_OK)
-                
-                response = addfolderbuttondialog.run()
-                if response == gtk.RESPONSE_OK:
-                    
-                    
-                    
-                    get = addfolderbuttondialog.get_filename()
-                    
-                    df.set_text(get)
-                else:
-                    addfolderbuttondialog.destroy()
-                    return
-                
-                addfolderbuttondialog.destroy()
-                
-            the_chose_folder_button = gtk.Button()
-            the_chose_folder_buttonicon = gtk.Image()
-            the_chose_folder_buttonicon.set_from_file("py_data/icons/folder.png")
-            the_chose_folder_button.add(the_chose_folder_buttonicon)
-            the_chose_folder_button.set_tooltip_text("Choose Download Folder")
-            the_chose_folder_button.connect("clicked", change_further, mergefolderpath, url)
-            changefbox.pack_start(the_chose_folder_button, False) 
-            
-            
-            quickselectframe = gtk.Frame("Quick Select")
-            
-            quickselectbox = gtk.HBox(False)
-            quickselectframe.add(quickselectbox)
-            
-            
-            
-            # select
-            
-            selectbutton = gtk.Button("Select")
-
-            quickselectbox.pack_end(selectbutton, False)
-            
-            
-            # smaller size
-            
-            smallersize = gtk.CheckButton("Smaller Size")
-            quickselectbox.pack_end(smallersize, False)          
-            
-            # biggersize
-            
-            biggersize = gtk.CheckButton("Bigger Size")
-            quickselectbox.pack_end(biggersize, False) 
-            
-            # addfiles
-            
-            addfiles = gtk.CheckButton("Add Missing")
-            quickselectbox.pack_end(addfiles, False) 
-            addfiles.set_active(True)
-            
-            # chose all
-            
-            choseall = gtk.CheckButton("Chose All")
-            quickselectbox.pack_end(choseall, False) 
-            
-                        
-            mergebox.pack_start(quickselectframe, False)
-            
-
-            
-            thebar = gtk.ProgressBar()
-            thebar.set_text("MERGE FOLDER")
-            mergebox.pack_end(thebar, False)
-            
-            
-            mergebox.show_all()
-            mainwindow.set_sensitive(False)
-            
-            mergedialog.show()
-            mergedialog.set_sensitive(False)
-            
-            client.send("MERGELIST_REQUEST")
-            
-            print "CLIENT SENT MERGELIST_REQUEST"
-            
-            
-            thebar.set_fraction(0.1)
-            
-            while gtk.events_pending():
-                gtk.main_iteration_do(True)
-            
-            print client.recv(1024)
-            
-            
-            
-            client.send(url)
-            
-            print "CLIENT SENT URL"
-            
-            size = client.recv(1024)
-            
-            print "CLIENT recv ", size
-            
-            thebar.set_fraction(0.5)
-            
-            while gtk.events_pending():
-                gtk.main_iteration_do(True)
-            
-            
-            client.send("OK")
-            
-            recvlist = client.recv(int(size))
-            
-            thebar.set_fraction(0)
-            
-            while gtk.events_pending():
-                gtk.main_iteration_do(True)
-                
-            #print  "recvlist",  recvlist 
-            
-            client.send("REQEST_FILES_LIST")
-            
-            size = client.recv(1024)
-            
-            client.send("OK")
-            
-            recvfilelist = client.recv(int(size))
-            
-            #print "recvfilelist", recvfilelist
-            
-            
-            # adding the list to the screen
-            
-            globals()["thelistscroll"] = gtk.ScrolledWindow()
-            global thelistscroll
-            mergebox.pack_start(thelistscroll)
-            
-            globals()["thelistboxformerge"] = gtk.VBox(False)
-            global thelistboxformerge
-            thelistscroll.add_with_viewport(thelistboxformerge)
-            
-            
-            # refreshing the window
-            
-            
-            globals()["createfolderswhiledowload"] = []
-            globals()["iftogetfilesfromserver"] = []
-            
-            def refreshfolders(widget):
-                
-                global thelistboxformerge # THE BOX TO PUT EVERYTHING IN
-                try:
-                    thelistboxformerge.destroy()
-                    print "DESTORYED thelistboxformerge"
-                except:
-                    pass
-                
-                global thelistscroll
-                thelistboxformerge = gtk.VBox(False)
-                thelistscroll.add_with_viewport(thelistboxformerge)
-                
-                
-                global createfolderswhiledowload
-                createfolderswhiledowload = []
-                global iftogetfilesfromserver
-                iftogetfilesfromserver = []
-                
-                for line, folder in enumerate(recvlist.split("\n")):
-                    
-                    x = str(line)
-                    
-                    df =  mergefolderpath.get_text()
-                    
-                    ifdownload = False
-                    
-                    folderexists = False
-                    
-                    if os.path.exists(df+folder ):
-                        
-                        folderexists = True
-                    
-                    com = "the_folderbox"+x+" = gtk.HBox(False)"
-                    exec(com) in globals(), locals()
-                    
-                    com = "thelistboxformerge.pack_start(gtk.HSeparator(), False)"
-                    exec(com) in globals(), locals()
-                    
-                    
-                    com = "thelistboxformerge.pack_start(the_folderbox"+x+", False)"
-                    exec(com) in globals(), locals()
-                    
-                    # the ADD checkbox
-                    
-                    com  = "addcheck"+x+" = gtk.CheckButton()"
-                    exec(com) in globals(), locals()
-                    
-                    
-                    
-                    if choseall.get_active() == True:
-                        
-                        com  = "addcheck"+x+".set_active(True)"
-                        exec(com) in globals(), locals()
-                        ifdownload = True
-                        
-                    elif folderexists == False and addfiles.get_active() == True:
-                        
-                        com  = "addcheck"+x+".set_active(True)"
-                        exec(com) in globals(), locals()
-                        
-                        ifdownload = True
-                        
-                    else:
-                        
-                        com  = "addcheck"+x+".set_active(False)"
-                        exec(com) in globals(), locals()
-                        
-                    
-                    com = "ifdownload = addcheck"+x+".get_active()"
-                    exec(com) in globals(), locals()
-                    
-                    
-                    def foldercheckboxmerge(widget, dolderid):
-                        global createfolderswhiledowload
-                        
-                        if createfolderswhiledowload[dolderid] == True:
-                            createfolderswhiledowload[dolderid] = False
-                        else:
-                            createfolderswhiledowload[dolderid] = True
-                    
-                        print createfolderswhiledowload
-                    
-                    com  = "addcheck"+x+".connect('clicked',foldercheckboxmerge , int(x))"
-                    exec(com) in globals(), locals()
-                        
-                    com = "the_folderbox"+x+".pack_start(addcheck"+x+", False)"
-                    exec(com) in globals(), locals()
-                    
-                    # folder icon
-                    
-                    com = "folericon"+x+" = gtk.Image()"
-                    exec(com) in globals(), locals()
-                    com = "folericon"+x+".set_from_file('py_data/icons/folder.png')"
-                    exec(com) in globals(), locals()
-                    com = "the_folderbox"+x+".pack_start(folericon"+x+", False)"
-                    exec(com) in globals(), locals()
-                    
-                    # folder name
-                    com = "the_folderbox"+x+".pack_start(gtk.Label(folder), False)"
-                    exec(com) in globals(), locals()
-                    
-                    
-                    
-                    
-                    # folder contents
-                    
-                    #frame
-                    com = "mergeframebox"+x+" = gtk.HBox(False)"
-                    exec(com) in globals(), locals()
-                    com = "mergeframebox"+x+".pack_start(gtk.Label('      '), False)"
-                    exec(com) in globals(), locals()
-                    
-                    com = "mergeframe"+x+" = gtk.Frame()"
-                    exec(com) in globals(), locals()
-                    com = "mergeframebox"+x+".pack_start(mergeframe"+x+", False)"
-                    exec(com) in globals(), locals()
-                    
-                    com = "theitemslist"+x+" = gtk.VBox(False)"
-                    exec(com) in globals(), locals()
-                    
-                    com = "mergeframe"+x+".add(theitemslist"+x+")"
-                    exec(com) in globals(), locals()
-                    
-                    
-                    com = "thelistboxformerge.pack_start(mergeframebox"+x+", False)"
-                    exec(com) in globals(), locals()
-                    
-                    
-                    
-                    for num, item in enumerate(recvfilelist.split("\n")):
-                        
-                        n = str(num)
-                        
-                        thisfolderitems = []
-                        
-                        if item[item.find('|')+1:item.rfind("/")] == folder:
-                            
-                            com = "itemsbox"+n+" = gtk.HBox(False)"
-                            exec(com) in globals(), locals()
-                            
-                            com = "theitemslist"+x+".pack_start(itemsbox"+n+")"
-                            exec(com) in globals(), locals()
-                            # the ADD checkbox
-                    
-                            com  = "addcheck"+n+" = gtk.CheckButton()"
-                            exec(com) in globals(), locals()
-                            
-                            
-                            
-                            fileexists = False
-                            existfilesize = 0
-                            iftogetfile = False
-                            
-                            
-                            try:
-                                open(df+folder+item[item.rfind('/'):], "r")
-                                
-                                print "FILE EXIST" , df+folder+item[item.rfind('/'):]
-                                
-                                existfilesize = os.path.getsize(df+folder+item[item.rfind('/'):])
-                                fileexists = True
-                                
-                                
-                            except:
-                                print "FILE DOES NOT EXIST", df+folder+item[item.rfind('/'):]
-                            
-                            
-                            
-                            if choseall.get_active() == True:
-                        
-                                com  = "addcheck"+n+".set_active(True)"
-                                exec(com) in globals(), locals()
-                                
-                                iftogetfile = True
-                                
-                            elif fileexists == False and addfiles.get_active() == True:
-                                
-                                com  = "addcheck"+n+".set_active(True)"
-                                exec(com) in globals(), locals()
-                                
-                                iftogetfile = True
-                                
-                            elif biggersize.get_active() == True and existfilesize < int(item[:item.find("|")]):
-                            
-                                com  = "addcheck"+n+".set_active(True)"
-                                exec(com) in globals(), locals()
-                                
-                                iftogetfile = True
-                                
-                            elif smallersize.get_active() == True and existfilesize > int(item[:item.find("|")]):
-                            
-                                com  = "addcheck"+n+".set_active(True)"
-                                exec(com) in globals(), locals()
-                                
-                                iftogetfile = True
-                                
-                            else:
-                                
-                                com  = "addcheck"+n+".set_active(False)"
-                                exec(com) in globals(), locals()
-                            
-                            def itemscheckboxmerge(widget, dolderid):
-                                global iftogetfilesfromserver
-                                
-                                if iftogetfilesfromserver[dolderid] == True:
-                                    iftogetfilesfromserver[dolderid] = False
-                                else:
-                                    iftogetfilesfromserver[dolderid] = True
-                            
-                                print iftogetfilesfromserver
-                            
-                            com  = "addcheck"+n+".connect('clicked',itemscheckboxmerge , int(n)-1)"
-                            exec(com) in globals(), locals()
-                            
-                            com = "itemsbox"+n+".pack_start(addcheck"+n+", False)"
-                            exec(com) in globals(), locals()
-                            
-                            # folder icon
-                            
-                            com = "fileicon"+n+" = gtk.Image()"
-                            exec(com) in globals(), locals()
-                            com = "fileicon"+n+".set_from_file('py_data/icons/unknown.png')"
-                            exec(com) in globals(), locals()
-                            com = "itemsbox"+n+".pack_start(fileicon"+n+", False)"
-                            exec(com) in globals(), locals()
-                            
-                            # folder name
-                            com = "itemsbox"+n+".pack_start(gtk.Label(item[item.rfind('/'):]), False)"
-                            exec(com) in globals(), locals()
-                            
-                            if iftogetfile == True:
-                                iftogetfilesfromserver.append(True)
-                            else:
-                                iftogetfilesfromserver.append(False)
-                            
-                    if ifdownload == True:
-                        createfolderswhiledowload.append(True)
-                    else:
-                        createfolderswhiledowload.append(False)
-                    
-                    
-                    
-                                
-                thelistboxformerge.show_all()        
-                    
-            refreshfolders(True)
-            selectbutton.connect("clicked", refreshfolders)
-            
-            thelistscroll.show()
-            thelistboxformerge.show_all()
-            
-            
-            while gtk.events_pending():
-                gtk.main_iteration_do(True)
-            
-            
-            mergedialog.set_sensitive(True)
-            response = mergedialog.run()
-            
-            if response == gtk.RESPONSE_APPLY:
-                
-                print "RESPONSED APPLY"
-                
-                mergedialog.set_sensitive(False)
-                    
-                    
-                
-                
-                # FIRST CREATE ALL THE FOLDERS
-            
-                thebar.set_text("CREATING FOLDERS")
-                
-                for b, i in enumerate(createfolderswhiledowload):
-                    
-                    thebar.set_fraction(1.0/len(createfolderswhiledowload)*b)
-                    
-                    
-                    
-                    if i == True:
-                        
-                        thenewurl = mergefolderpath.get_text() + recvlist.split("\n")[b]
-                        
-                        Print("CREATING FOLDER "+thenewurl)
-                        
-                        os.makedirs(thenewurl)
-                        
-                        
-                        
-                    while gtk.events_pending():
-                        gtk.main_iteration_do(True)
-
-                print iftogetfilesfromserver
-                                    
-                for b, i in enumerate(iftogetfilesfromserver):
-                    
-
-                    
-                    if i == True:
-                        
-                        print "THERE IS THE TRUE"
-                        
-                        filestr = recvfilelist.split("\n")[b+1]
-                        
-                        
-                        size = int(filestr[:filestr.find("|")])
-                        newpath = mergefolderpath.get_text()+filestr[filestr.find("|")+1:]
-                        
-                        print "newpath", newpath
-                        print "filestr", filestr
-                        
-                        
-                        
-                        tmp = open(newpath, "w")
-                        tmp.close()
-                        
-                        if size != 0:
-                            
-                            client.send("GET "+str(b))
-                            
-                            thebar.set_text("Dowloading "+newpath)
-                            
-                            while True:
-                                
-                                savefile = open(newpath, "ab")
-                                savefile.write(client.recv(524288))
-                                savefile.close()
-                                
-                                
-                                #RA = RA + 1024
-                                
-                                thebar.set_fraction(float(os.path.getsize(newpath))/float(size))
-                                #progress.set_text("Dowloaded "+str(int(os.path.getsize(saveurl)/524288/2))+" From "+str(int(int(SIZE)/524288/2))+ " MB ")
-                                
-                                while gtk.events_pending():
-                                    gtk.main_iteration_do(False)
-                                
-                                if os.path.getsize(newpath) >= int(size):
-                                    client.send("STOP")
-                                    break
-                                else:
-                                    client.send("MORE")
-                                
-            mergedialog.destroy()
-            client.send("STOP")
-            mainwindow.set_sensitive(True)
-        
-        
-        # Folder save sunction
-        
-        if folder == "FOLDER":
-            
-            com = "merge_"+n+" = gtk.Button()"
-            exec(com) in globals(), locals()
-            
-            
-            com = "merge_"+n+".connect('clicked', merge_forbuttons, url)"
-            exec(com) in globals(), locals()
-            
-            com = "mergeicon_"+n+" = gtk.Image()"
-            exec(com) in globals(), locals()
-            
-            com = "mergeicon_"+n+".set_from_file('py_data/icons/folder_save.png')"
-            exec(com) in globals(), locals()
-            
-            com = "merge_"+n+".add(mergeicon_"+n+")"
-            exec(com) in globals(), locals()
-            
-            com = "filebox_"+n+".pack_end(merge_"+n+", False)"
-            exec(com) in globals(), locals()
         
         
         
