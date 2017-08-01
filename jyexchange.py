@@ -541,7 +541,7 @@ settingsbox.pack_end(globalupdateframe, True)
 
 def on_updatelist(widget):
     updwin = gtk.Window()
-    updwin.set_title("Updates Log ["+os.getcwd()+"/UPDATES]")
+    updwin.set_title("Updates Log ["+os.getcwd()+"/LUPDATES]")
     updwin.set_position(gtk.WIN_POS_CENTER)
     
     updbox = gtk.VBox(False)
