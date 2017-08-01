@@ -13,7 +13,7 @@ import datetime
 import pango
 import zipfile
 
-VERSION = 0.51 # A software version for the updater
+VERSION = 0.52 # A software version for the updater
 
 def main_quit(widget):
     gtk.main_quit()
@@ -550,12 +550,57 @@ def on_updatelist(widget):
     updscroll = gtk.ScrolledWindow()
     updscroll.set_size_request(800,400)
     
-    updatefile = open("UPDATES", "r")
+    updatefile = open("LUPDATES", "r")
     updatefile = updatefile.read()
     
-    uplabel = gtk.Label(updatefile)
-    uplabel.modify_font(pango.FontDescription("Monospace"))
-    updscroll.add_with_viewport(uplabel)
+    updbox2 = gtk.VBox(False)
+    updscroll.add_with_viewport(updbox2)
+    
+    def forLNK(w, link):
+        os.system("xdg-open "+link)
+    
+    for x, i in enumerate(updatefile.split("\n")):
+
+        n = str(x)
+                
+        if i.startswith("!"):
+           
+            if i.startswith("!IMG "):
+                tmpimage = urllib2.urlopen(i[5:])
+                tmpimagefile = open("py_data/tmp_update_picture.png", "w")
+                tmpimagefile.write(tmpimage.read())
+                tmpimagefile.close()
+                
+                com = "updateimage"+n+" = gtk.Image()"
+                exec(com) in globals(), locals()
+                
+                com = "updateimage"+n+".set_from_file('py_data/tmp_update_picture.png')"
+                exec(com) in globals(), locals()
+                
+                com = "updbox2.pack_start(updateimage"+n+", False)"
+                exec(com) in globals(), locals()
+            
+            elif i.startswith("!LNK "):
+                
+                link = i[i.find(" ")+1: i.find("[")-1]
+                print link
+                buttonname = i[i.find("[")+1: i.find("]")]
+                print buttonname
+                
+                
+                com = "updateLNKbutton"+n+" = gtk.Button('"+buttonname+"')"
+                exec(com) in globals(), locals()
+                com = "updateLNKbutton"+n+".set_tooltip_text('"+link+"')"
+                exec(com) in globals(), locals()
+                com = "updateLNKbutton"+n+".connect('clicked', forLNK, '"+link+"')"
+                exec(com) in globals(), locals()
+                com = "updbox2.pack_start(updateLNKbutton"+n+", False)"
+                exec(com) in globals(), locals()
+        else:
+        
+            uplabel = gtk.Label(i)
+            uplabel.modify_font(pango.FontDescription("Monospace"))
+            updbox2.pack_start(uplabel, False)
     
     updbox.pack_start(updscroll, False)
     
