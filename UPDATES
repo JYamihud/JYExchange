@@ -1,19 +1,15 @@
 0.51
    
-   IF YOU ARE READING THIS MESSAGE... THERE IS NO CURRENT UPDATE
-I'm just changing the system of the update and integrating new
-features to it...
+This updates will give you a new updater. Now you will see just a text. But
+after the update you will see stuff like:
 
-Image testing
-
+New logo of the JYExchange:
 !IMG https://raw.githubusercontent.com/JYamihud/updates-manager/master/icon.png
-!IMG http://icons.iconarchive.com/icons/uriy1966/steel-system/256/Picture-icon.png
-Testing Links system
-!LNK https://github.com/JYamihud/JYExchange [Respository]
+Or buttons with links in them:
+!LNK https://github.com/JYamihud/JYExchange [Like the GitHub Respository]
 
-Well and of course
-!LNK https://www.youtube.com/channel/UCxYyw4dTURyae2yTt50AH-Q [My Youtube Channel]
-
+I will leave the number of update untaouched untill tomorrow (02/08/2017)
+so you could see how the text becomes things... 
 
 0.50
 
