@@ -6,14 +6,16 @@
 import gtk
 import threading
 import os
+import commands
 import socket
 import random
 import glib
 import datetime
 import pango
 import zipfile
+import time
 
-VERSION = 0.52 # A software version for the updater
+VERSION = 1.0 # A software version for the updater
 
 def main_quit(widget):
     gtk.main_quit()
@@ -1055,6 +1057,34 @@ server1 = threading.Thread(target=servering, args=())
 server1.daemon = True
 server1.start()
 
+
+broadcastallow = True
+
+machinename = gtk.Entry()
+import getpass
+machinename.set_text(getpass.getuser())
+
+def broadcast():
+    
+    cs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    cs.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    cs.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    
+    while True:    
+        if broadcastallow == True:
+            try:
+                
+                serverip = commands.getoutput("hostname -I")
+                cs.sendto("!JYESB ["+machinename.get_text()+"] "+serverip+str(upport), ('255.255.255.255', 54545))
+            except:
+                raise
+            time.sleep(1)
+                
+broadcast1 = threading.Thread(target=broadcast, args=())
+broadcast1.daemon = True
+broadcast1.start()
+
+
 upportentry = None
 
 def upsocketsettings():
@@ -1070,7 +1100,7 @@ def upsocketsettings():
     #finsing a current IP
     
     try:
-        import commands
+        
         serverip = commands.getoutput("hostname -I")
         
         if serverip in ["", " ", "\n", " \n"]:
@@ -1107,6 +1137,22 @@ upsocketsettings()
 
 
 #making a port accepting thingy
+
+broadcastbox = gtk.HBox(False)
+upt1box.pack_start(broadcastbox, False)
+
+
+broadcastbox.pack_start(gtk.Label("Broadcast name: "), False)
+broadcastbox.pack_start(machinename, False)
+
+def broadcastcheck(w):
+    global broadcastallow
+    broadcastallow = w.get_active()
+
+broadcheck = gtk.CheckButton("Broadcast")
+broadcheck.set_active(broadcastallow)
+broadcheck.connect("clicked",broadcastcheck)
+broadcastbox.pack_start(broadcheck)
 
 #little separator
 lilsep = gtk.HSeparator()
@@ -1751,11 +1797,13 @@ def ONuprefresh(widget):
             
             Print("SOCKET ERROR!    PROBABLY : [WRONG IP OR PORT] CHECK TERMINAL FOR DETAILS", True)
             
-            global CONNECTED
-            CONNECTED == True
+            
             
             
         else:
+            
+            global CONNECTED
+            CONNECTED == True
             
             btb.set_sensitive(True)
             
@@ -1969,6 +2017,72 @@ dpassbox.pack_end(downloadall, False)
 
 dscroller = gtk.ScrolledWindow()
 cbox1.pack_start(dscroller)
+
+
+# RECEAVE BROADCAST
+
+
+recvmach = []
+
+def recievebroadcast():
+    
+    global recvmach
+    
+    UDP_IP = "255.255.255.255"
+    UDP_PORT = 54545
+
+    sock = socket.socket(socket.AF_INET, # Internet
+                         socket.SOCK_DGRAM) # UDP
+    sock.bind((UDP_IP, UDP_PORT))
+    
+    count = 0
+    
+    
+    
+    while CONNECTED == False:
+        
+        
+        
+        data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+        
+        if data.startswith("!JYESB ["):
+            
+            
+            
+            if data not in recvmach:
+                
+                for x, i in enumerate(recvmach):
+                
+                    if i.endswith(data[data.rfind("]"):]):
+                        recvmach[x] = data
+                
+                recvmach.append(data)
+                try:
+                    reloaddfiles(True)
+                    
+                except:
+                    raise
+                
+                Print( data )
+                
+                tmp = []
+                
+                for i in recvmach:
+                    if i not in tmp:
+                        tmp.append(i)
+                recvmach = tmp
+                
+                print "\n\n", recvmach
+        
+        
+        
+broadcast2 = threading.Thread(target=recievebroadcast, args=())
+broadcast2.daemon = True
+broadcast2.start()       
+    
+
+
+
 
 
 
@@ -2500,20 +2614,87 @@ def dowload_forbuttons(widget, url):
 
 dfilesbox = None
 
-def reloaddfiles():
+def reloaddfiles(broadcast=False):
     
+    if broadcast == True:
+        print "Called to resfresh by broadcasting"
+        
+        global dscroller
+        global dfilesbox
+        
+        dfilesbox.destroy()
+        
+        showdcomputers()
+        
+        dfilesbox.show_all()
+        
+        
+    else:
+        global dscroller
+        global dfilesbox
+        
+        dfilesbox.destroy()
+        
+        showdfiles()
+        
+        dfilesbox.show_all()
     
+def showdcomputers():
     
     global dscroller
+    
     global dfilesbox
     
-    dfilesbox.destroy()
     
-    showdfiles()
+    dfilesbox = gtk.VBox()
+    dscroller.add_with_viewport(dfilesbox)
     
-    dfilesbox.show_all()
-    
-
+    for x, i in enumerate(recvmach):
+        
+        n = str(x)
+        
+        def thebutton(w, text):
+            
+            ip, port = text[text.rfind("]")+2:].split(" ")
+            
+            dipentry.set_text(ip)
+            dportentry.set_text(port)
+            
+            ONuprefresh(w)
+            
+            
+        
+        com = "compbutton"+n+" = gtk.Button()"
+        exec(com) in globals(), locals()
+        
+        com = "compicon"+n+" = gtk.Image()"
+        exec(com) in globals(), locals()
+        
+        com = "compicon"+n+".set_from_file('py_data/icons/network.png')"
+        exec(com) in globals(), locals()
+        
+        com = "compbox"+n+" = gtk.HBox(False)"
+        exec(com) in globals(), locals()
+        
+        com = "compbutton"+n+".add(compbox"+n+")"
+        exec(com) in globals(), locals()
+        
+        com = "compbox"+n+".pack_start(compicon"+n+", False)"
+        exec(com) in globals(), locals()
+        
+        labeltext = i[i.find("[")+1:i.rfind("]")]
+        if commands.getoutput("hostname -I") in i:
+            labeltext = labeltext + " [ THIS COMPUTER ]"
+        
+        
+        com = "compbox"+n+".pack_start(gtk.Label(' "+labeltext.replace("'", "\"")+"'), False)"
+        exec(com) in globals(), locals()
+        
+        com = "compbutton"+n+".connect('clicked', thebutton, '"+i.replace("'", "\"")+"')"
+        exec(com) in globals(), locals()
+        
+        com = "dfilesbox.pack_start(compbutton"+n+", False)"
+        exec(com) in globals(), locals()
 
 
 def showdfiles():
