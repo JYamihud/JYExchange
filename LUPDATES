@@ -1,0 +1,97 @@
+0.51
+   
+Now the updater will be able to show images and make buttons with links
+
+New logo of the JYExchange:
+!IMG https://raw.githubusercontent.com/JYamihud/updates-manager/master/icon.png
+Or buttons with links in them:
+!LNK https://github.com/JYamihud/JYExchange [Like the GitHub Respository]
+
+__________________________________________________________________________
+
+0.50
+
+BUG FIXED! Unsinc while merging
+                     
+There was a mistake in the new feature of merging folder. This
+feature is temporarely substituting an automatic analogous. It's
+checking if the file (from the folder) already exists... And if yes
+checks if the size is the same as on the Server. If it's both exist
+and the size is the same... It's Skippes the file. If not downloads
+the new version from server. This is now done automatically.
+WARNING ! REQUAIERS UPDATE ON BOTH SIDES.
+    
+FOLDERS PROGRESS DOUBLE WIDGET
+                     
+Now you can see both progress of current file and the whole folder
+at the progress widget on the top in the same time. There been done a
+clever way to do so... I hope you'll like it.
+
+
+__________________________________________________________________________
+
+0.42
+
+BUG FIXED! 0 bite files:
+                
+The was a problem with files less then 1 bite in size.
+The sender tried to send the first couple bites from it...
+But since there is no bites to send it was crashing and getting
+into a weird never ending loop.
+
+It wasn't a bad in 0.3 because there were no dependicies
+on file actually finishing donloading to continue the loop.
+Let's say you have many files in the folder and one of them is
+0 bites... It's a big deal if this 0 bite file never finishes
+downloading because there are more file to go after him
+
+
+FOLDERS MERGE FUNCTIONS:
+
+Now you can downlod folders partially... Select the files
+manually. Or use quick select functions. Such as Add Missing,
+add changed in size Bigger Size or Smaller Size.
+
+
+__________________________________________________________________________ 
+
+0.41
+Shows each uploading file in folders:
+
+Now if you are the server and from your machine the folder 
+been downloaded. Means that you are the uploader. You will see in 
+the console each uploading file.
+This will help you know what file exactly did client get...
+
+__________________________________________________________________________ 
+
+0.4
+Download lists:
+
+Now you finally can download a bunch of files in one click.
+there is a new uncloked feature (it was locked because the button
+didn't do anything before now). Just click donwload not on the file
+it self. But on the download on the top panel. And you will get
+all the list donwloaded... Cool isn't that?
+
+
+Faster folders:
+
+In the previous version of JYExchange you had a slow folders transfer
+due to the fact that it was zipping and unzipping folders for no reason.
+Now in version 0.4 the folders are not zipped, but transferred with a
+info file. It will make an improvement of speed drastically.
+
+(NOTE: There will be a support for the old way if the server or client on
+other side is older. But recomended to make at least a local update to 0.4
+for quicker folder transfer)
+
+__________________________________________________________________________ 
+
+0.3
+
+True updater:
+
+Before this you would update from the version on the second end.
+which is rediculas... Now you can do that through the github.
+If new version published... The programm will notify you about the update.
