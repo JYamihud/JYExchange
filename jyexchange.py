@@ -2146,8 +2146,59 @@ def Drec_thread(url, updating=False):
                     progress = dtoolsvbox.get_data("progress")
                     progress.grab_add()
                     
+                    starthour = int(datetime.datetime.now().hour)
+                    startmin = int(datetime.datetime.now().minute)
+                    startsec = int(datetime.datetime.now().second)
+                    
+                    
                     
                     for n, p in enumerate(filedata.split("\n")[1:]):
+                        
+                        nowhour = int(datetime.datetime.now().hour)
+                        nowmin = int(datetime.datetime.now().minute)
+                        nowsec = int(datetime.datetime.now().second)
+                        
+                        leftfiles = len(filedata.split("\n")[1:]) - n+1
+                        
+                        #hour
+                        
+                        passedhours = nowhour - starthour
+                        try:
+                            fph = float(passedhours)/n
+                        except:
+                            fph = 0.0
+                        lefthours = leftfiles * fph
+                        
+                        #minute
+                        
+                        passedminutes = nowmin - startmin
+                        try:
+                            fpm = float(passedminutes)/n
+                        except:
+                            fpm = 0.0
+                        leftminutes = leftfiles * fpm
+                        
+                        #second
+                        
+                        passedsec = nowsec - startsec
+                        try:
+                            fps = float(passedsec)/n
+                        except:
+                            fps = 0.0    
+                        leftseconds = leftfiles * fps
+                        
+                        
+                        if int(lefthours) > 0:
+                            TIMING = str(int(lefthours)) + " HOURS"
+                        elif int(leftminutes) > 0:
+                            TIMING = str(int(leftminutes)) + " MINUTES"
+                        elif int(leftseconds) > 0:
+                            TIMING = str(int(leftseconds)) + " SECONDS"
+                        else:
+                            TIMING = "FEW MOMENTS"
+                        # 02-50850-35
+                        
+                        print "LEFT: ", lefthours, leftminutes, leftseconds
                         
                         try:
                             pp = n / float(len(filedata.split("\n")[1:])) * 100
@@ -2157,15 +2208,15 @@ def Drec_thread(url, updating=False):
                         
                         ppp = ""
                         
-                        for num in range(20):
+                        for num in range(10):
                             
                             
-                            if (float(num)/2)*10 > pp:
+                            if (float(num))*10 > pp:
                                 ppp = ppp + "○"
                             else:
                                 ppp = ppp + "●"
                         
-                        progress.set_text("▾ " + str(n)+" ▵ "+str(len(filedata.split("\n")[1:]))+" "+ppp+" "+str(int(pp))+"%")
+                        progress.set_text("▾ " + str(n)+" ▵ "+str(len(filedata.split("\n")[1:]))+" "+ppp+" "+str(int(pp))+"%  "+TIMING)
                         
                         print
                         print p
@@ -2724,10 +2775,54 @@ try:
         updscroll = gtk.ScrolledWindow()
         updscroll.set_size_request(800,400)
         
+        updbox2 = gtk.VBox(False)
+        updscroll.add_with_viewport(updbox2)
         
-        uplabel = gtk.Label(updatefile)
-        uplabel.modify_font(pango.FontDescription("Monospace"))
-        updscroll.add_with_viewport(uplabel)
+        def forLNK(w, link):
+            os.system("xdg-open "+link)
+        
+        for x, i in enumerate(updatefile.split("\n")):
+
+            n = str(x)
+                    
+            if i.startswith("!"):
+               
+                if i.startswith("!IMG "):
+                    tmpimage = urllib2.urlopen(i[5:])
+                    tmpimagefile = open("py_data/tmp_update_picture.png", "w")
+                    tmpimagefile.write(tmpimage.read())
+                    tmpimagefile.close()
+                    
+                    com = "updateimage"+n+" = gtk.Image()"
+                    exec(com) in globals(), locals()
+                    
+                    com = "updateimage"+n+".set_from_file('py_data/tmp_update_picture.png')"
+                    exec(com) in globals(), locals()
+                    
+                    com = "updbox2.pack_start(updateimage"+n+", False)"
+                    exec(com) in globals(), locals()
+                
+                elif i.startswith("!LNK "):
+                    
+                    link = i[i.find(" ")+1: i.find("[")-1]
+                    print link
+                    buttonname = i[i.find("[")+1: i.find("]")]
+                    print buttonname
+                    
+                    
+                    com = "updateLNKbutton"+n+" = gtk.Button('"+buttonname+"')"
+                    exec(com) in globals(), locals()
+                    com = "updateLNKbutton"+n+".set_tooltip_text('"+link+"')"
+                    exec(com) in globals(), locals()
+                    com = "updateLNKbutton"+n+".connect('clicked', forLNK, '"+link+"')"
+                    exec(com) in globals(), locals()
+                    com = "updbox2.pack_start(updateLNKbutton"+n+", False)"
+                    exec(com) in globals(), locals()
+            else:
+            
+                uplabel = gtk.Label(i)
+                uplabel.modify_font(pango.FontDescription("Monospace"))
+                updbox2.pack_start(uplabel, False)
         
         updbox.pack_start(updscroll, False)
         
@@ -2751,7 +2846,7 @@ try:
         
         
 except:
-    pass
+    raise
 
 
 
