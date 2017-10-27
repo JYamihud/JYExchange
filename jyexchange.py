@@ -573,6 +573,8 @@ def on_updatelist(widget):
     for x, i in enumerate(updatefile.split("\n")):
 
         n = str(x)
+        
+        import urllib2
                 
         if i.startswith("!"):
            
@@ -2037,7 +2039,7 @@ recvmach = []
 
 def recievebroadcast():
     
-    import urllib2
+    
     
     global recvmach
     
