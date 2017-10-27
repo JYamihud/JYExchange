@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # J.Y. Exchange
-# version 0.1
+# version 1.2
 # Using pyGTK and python 2.7 not 3 lol
 
 import gtk
@@ -15,10 +15,19 @@ import pango
 import zipfile
 import time
 
-VERSION = 1.0 # A software version for the updater
+VERSION = 1.2 # A software version for the updater
 
 def main_quit(widget):
+    
+    cs1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    cs1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    cs1.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    
+    serverip = commands.getoutput("hostname -I")
+    cs1.sendto("!JYESB ["+machinename.get_text()+"] "+serverip+"  OUT", ('255.255.255.255', 54545))
+    
     gtk.main_quit()
+    exit()
 
 #ZIP DEFS
 def zip_folder(folder_path, output_path):
@@ -627,8 +636,10 @@ def on_globalupdate(w):
     while gtk.events_pending():
         gtk.main_iteration_do(False)
     
+    updatefunction()
     
-    update()
+    globalupdate.set_sensitive(True)
+
 
 
 
@@ -641,7 +652,7 @@ globalupdatebox.pack_start(gtk.Label("GitHub Update"), True)
 globalupdate.add(globalupdatebox)
 
 globalupdate.connect("clicked", on_globalupdate)
-globalupdate.set_sensitive(False)
+
 gitdatebox.pack_start(globalupdate)
 
 bigbox = gtk.HPaned()
@@ -2048,20 +2059,43 @@ def recievebroadcast():
         if data.startswith("!JYESB ["):
             
             
+            if data.endswith("OUT"):
+                print "SENSED OUT"
+                
             
             if data not in recvmach:
+                
+                
+                        
+                        
+                
+                recvmach.append(data)
                 
                 for x, i in enumerate(recvmach):
                 
                     if i.endswith(data[data.rfind("]"):]):
-                        recvmach[x] = data
-                
-                recvmach.append(data)
-                try:
-                    reloaddfiles(True)
+                        
+                        try:
+                            recvmach[x] = data
+                        except:
+                            pass
                     
-                except:
-                    raise
+                    if data.endswith("OUT"):
+                        
+                        tmp = []
+                            
+                        for d in recvmach:
+                        
+                            if data[data.rfind("]"):data.rfind(" OUT")] in d:
+                                print "THIS ONE is OUT", d
+                            else:
+                                tmp.append(data)
+                        recvmach = tmp
+                            
+                                
+                            
+                            
+                
                 
                 Print( data )
                 
@@ -2071,6 +2105,12 @@ def recievebroadcast():
                     if i not in tmp:
                         tmp.append(i)
                 recvmach = tmp
+                
+                try:
+                    reloaddfiles(True)
+                    
+                except:
+                    raise
                 
                 print "\n\n", recvmach
         
@@ -2975,7 +3015,7 @@ def update():
     
     refreshprogress.set_fraction(0)
 
-try:
+def updatefunction(w=None):
     
     import urllib2
     
@@ -2985,7 +3025,7 @@ try:
     
     if float(updatefile.split("\n")[0]) > VERSION:
         
-        globalupdate.set_sensitive(True)
+        
         
         Print("UPDATE AVALABLE !!! [VERSION: "+str(VERSION)+" AVAILABLE: "+updatefile.split("\n")[0]+" ]")
         
@@ -3070,9 +3110,13 @@ try:
         
         updwin.show_all()
         
+    else:   
         
-except:
-    raise
+        updwin = gtk.Window()
+        updwin.add(gtk.Label("\n\n    THE J.Y.EXCHANGE    \n   IS UP TO DATE    \n\n"))
+        
+        updwin.show_all()
+
 
 
 
