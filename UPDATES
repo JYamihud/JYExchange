@@ -1,16 +1,16 @@
 1.2
 
-  1: There is a fixed Broadcasted menu. If the other side renames or closes the connection. 
-  It will disappear or change on the screen rather then adding a new connection like in the
-  last version.
+1: There is a fixed Broadcasted menu. If the other side renames or closes the connection. 
+It will disappear or change on the screen rather then adding a new connection like in the
+last version.
 !IMG https://raw.githubusercontent.com/JYamihud/updates-manager/master/jyexchange/Screenshot%20from%202017-10-27%2023-14-50.png
   
-  2: There was a bug with the updater that was trying to check for updates during any connection
-  not even checking if the accsess to the actuall internet is available. I tried to run it on a
-  local only network using a local router to connect 2 computers but not connect to the internet.
+2: There was a bug with the updater that was trying to check for updates during any connection
+not even checking if the accsess to the actuall internet is available. I tried to run it on a
+local only network using a local router to connect 2 computers but not connect to the internet.
   
-  It was stopping the software from opening so I made the checking for the Update optional by
-  pressing the GitHub update button.
+It was stopping the software from opening so I made the checking for the Update optional by
+pressing the GitHub update button.
   
 !IMG https://raw.githubusercontent.com/JYamihud/updates-manager/master/jyexchange/Screenshot%20from%202017-10-27%2023-18-41.png
   
