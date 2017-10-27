@@ -2037,6 +2037,8 @@ recvmach = []
 
 def recievebroadcast():
     
+    import urllib2
+    
     global recvmach
     
     UDP_IP = "255.255.255.255"
