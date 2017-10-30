@@ -15,7 +15,7 @@ import pango
 import zipfile
 import time
 
-VERSION = 1.2 # A software version for the updater
+VERSION = 1.21 # A software version for the updater
 
 def main_quit(widget):
     
@@ -766,6 +766,18 @@ def servering():
             c, addr = server.accept()
             
             Print( "CLIENT HAS CONNECTED : [ IP: " +str(addr[0]) + "  PORT: "+str(addr[1])+ "]")
+            
+            cs1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            cs1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            cs1.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            
+            serverip = commands.getoutput("hostname -I")
+            cs1.sendto("!JYESB ["+machinename.get_text()+"] "+serverip+"  OUT", ('255.255.255.255', 54545))
+            
+            broadcheck.set_sensitive(False)
+            broadcheck.set_active(False)
+            broadcastallow = False
+            
             
             
             # MAIN SERVER TALK
@@ -2728,6 +2740,8 @@ def showdcomputers():
         
         labeltext = i[i.find("[")+1:i.rfind("]")]
         if commands.getoutput("hostname -I") in i:
+            
+            continue # TEMTORARELY UNTILL I FIGURE IT OUT
             labeltext = labeltext + " [ THIS COMPUTER ]"
         
         
