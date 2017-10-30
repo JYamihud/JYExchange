@@ -1072,6 +1072,10 @@ def servering():
                     
                     Print( "CLIENT HAS DISCONNECTED : [ IP: " +str(addr[0]) + "  PORT: "+str(addr[1])+ "]", True)
                     
+                    broadcheck.set_active(True)
+                    broadcheck.set_sensitive(True)
+                    broadcastallow = True
+                    
                     server.close()
                     
                     servering()
