@@ -1813,6 +1813,11 @@ def ONuprefresh(widget):
                 
                 Print(  "CONNECTED TO SERVER COMPUTER" )
                 
+                global CONNECTED
+                CONNECTED = True
+                
+                
+                
                 break
             except:
                 
@@ -1832,9 +1837,11 @@ def ONuprefresh(widget):
         else:
             
             global CONNECTED
-            CONNECTED == True
+            CONNECTED = True
             
             btb.set_sensitive(True)
+            
+            
             import time
             time.sleep(0.1)
             REFRESH_REQUEST()
@@ -2679,17 +2686,25 @@ dfilesbox = None
 
 def reloaddfiles(broadcast=False):
     
+    global CONNECTED
+    
+    print CONNECTED, "CONNECTED"
+    
     if broadcast == True:
         print "Called to resfresh by broadcasting"
         
         global dscroller
         global dfilesbox
         
-        dfilesbox.destroy()
+        print CONNECTED, "CONNECTED"
         
-        showdcomputers()
+        if CONNECTED == False:
         
-        dfilesbox.show_all()
+            dfilesbox.destroy()
+            
+            showdcomputers()
+            
+            dfilesbox.show_all()
         
         
     else:
@@ -2697,13 +2712,13 @@ def reloaddfiles(broadcast=False):
         global dfilesbox
         
         
-        if CONNECTED == False:
         
-            dfilesbox.destroy()
+        
+        dfilesbox.destroy()
             
-            showdfiles()
+        showdfiles()
             
-            dfilesbox.show_all()
+        dfilesbox.show_all()
     
 def showdcomputers():
     
