@@ -1835,9 +1835,10 @@ def ONuprefresh(widget):
             CONNECTED == True
             
             btb.set_sensitive(True)
+            import time
+            time.sleep(0.1)
+            REFRESH_REQUEST()
             
-            REFRESH_REQUEST()
-            REFRESH_REQUEST()
             
             
             
