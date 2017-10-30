@@ -1837,6 +1837,7 @@ def ONuprefresh(widget):
             btb.set_sensitive(True)
             
             REFRESH_REQUEST()
+            REFRESH_REQUEST()
             
             
             
@@ -2127,7 +2128,8 @@ def recievebroadcast():
                 recvmach = tmp
                 
                 try:
-                    reloaddfiles(True)
+                    if CONNECTED == False:
+                        reloaddfiles(True)
                     
                 except:
                     raise
@@ -2693,11 +2695,14 @@ def reloaddfiles(broadcast=False):
         global dscroller
         global dfilesbox
         
-        dfilesbox.destroy()
         
-        showdfiles()
+        if CONNECTED == False:
         
-        dfilesbox.show_all()
+            dfilesbox.destroy()
+            
+            showdfiles()
+            
+            dfilesbox.show_all()
     
 def showdcomputers():
     
