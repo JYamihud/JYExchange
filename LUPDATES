@@ -1,3 +1,34 @@
+1.3
+
+New scripting system.
+
+As you maybe saw there is a console in the bottom of the
+JYExchange window. This console now has more functionality.
+
+More info you can get by typing HELP in it and pressing enter.
+
+!IMG https://raw.githubusercontent.com/JYamihud/updates-manager/master/jyexchange/Screenshot%20from%202017-11-14%2008-34-08.png
+
+You can controll all kinds of setting with those commands
+and there will be more commands in future.
+
+All of them can be executed via a file such as .sh in bash.
+You can make one in any text editor by writting down each
+command in a new line and saving to .jyes format
+(simply save the file as text (.txt) and rename the ending
+(.txt) to (.jyes).
+
+To load them into the jyexchange you will have to use terminal
+such as:
+
+python jyexchange.py /home/yourname/yourfolder/thescriptyouwrote.jyes
+
+and JYExchange will run the script on the startup.
+
+[THIS FEATURE IS DEVELOPED TO HELP TO BLENDER ORGINIZER NEW SET OF FEATURES]
+
+_______________________________________________________________________________
+
 1.21
 
 Little tweak here and there to make the
