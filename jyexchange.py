@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # J.Y. Exchange
-# version 1.2
 # Using pyGTK and python 2.7 not 3 lol
 
 import gtk
@@ -14,8 +13,15 @@ import datetime
 import pango
 import zipfile
 import time
+import sys
 
-VERSION = 1.21 # A software version for the updater
+
+
+
+VERSION = 1.3 # A software version for the updater
+
+
+
 
 def main_quit(widget):
     
@@ -142,6 +148,8 @@ def Print(text, error=False):
     
     tmp = "["+time+"]    "+text+"\n"
     
+    
+    
     global e_tag
     global m_tag
     global r_tag
@@ -155,19 +163,28 @@ def Print(text, error=False):
     if error == True:
         tag = e_tag
         tagging = True
+        
+        print "\033[91m"+tmp[:-1].replace("<h>", "\033[94m")+"\033[m"
+
+        
     elif error == "m":
         
         tag = m_tag
         tagging = True
-    
+        
+        print "\033[93m"+tmp[:-1]+"\033[m"
+        
     elif error == "r":
         tag = r_tag
         tagging = True
-    
+        
+        print "\033[93m"+tmp[:-1]+"\033[m"
+        
     elif error == "h":
         tag = h_tag
         tagging = True
-    
+        
+        print "\033[94m"+tmp[:-1]+"\033[m"
     
     
     #COMPLICATED MARCKUPS
@@ -201,7 +218,7 @@ def Print(text, error=False):
         pass
     else:
         console.insert(end, tmp)
-    
+        print "\033[92m"+tmp[:-1]+"\033[m"
     
     
 
@@ -253,6 +270,9 @@ def consoleinput(widget):
     
     global client
     
+    
+    Print("INPUTED COMMAND: ["+text+"]", "m")
+    
     # SAY: sending a message
     
     if text.startswith("SAY:"):
@@ -267,7 +287,7 @@ def consoleinput(widget):
         try:
             client.send(text)
             
-            Print("SENT: "+text[5:], "m")
+            #Print("SENT: "+text[5:], "m")
             
             
         except:
@@ -275,13 +295,65 @@ def consoleinput(widget):
     
     elif text.startswith("UPDATE"):
         update()
+        widget.set_text("")
+    elif text.startswith("BNAME: "):
+        machinename.set_text(text[7:])
+        widget.set_text("")
+    elif text.startswith("ADD: "):
+        
+        
+        if os.path.exists(text[5:]):
+            if ["file://"+text[5:], text[5:][text[5:].rfind("/")+1:]] not in upfiles:
+                upfiles.append(["file://"+text[5:], text[5:][text[5:].rfind("/")+1:], uplock])
+            
+            refrashuploads()
+        else:
+            Print("PATH ["+text[5:]+"] DOES NOT EXIST", True)
+        widget.set_text("")
+    elif text.startswith("DEL: "):
+        
+        
+        try:
+            if int(text[5:]) > 0:
+                try:
+                    del upfiles[int(text[5:])]
+                    Print("ITEM NUMBER ["+text[5:]+"] WAS REMOVED")
+                    refrashuploads()
+                except:
+                    Print("CANNOT REMOVE THE ITEM", True)
+            else:
+                Print("CANNOT REMOVE LOCAL UPDATE", True)
+        except:
+            Print("SYNTAX ERROR, PROBABLY ARGUMENT IS NOT A NUMBER", True)
+        widget.set_text("")
+    elif text == "UPFILES":
+        for num, item in enumerate(upfiles):
+            
+            l = "UNLOCKED"
+            if item[-1] == True:
+                l = "LOCKED"
+            
+            if num > 0:
+            
+                Print(str(num)+ "  " +item[1]+"  "+l)
+            else:
+                Print("0  LOCAL UPDATE FILE", "m")
+        widget.set_text("")
     
     elif text.startswith("SNAKE"):
         Print("THE BITCHY PYTHON", True)
         import snake
+        widget.set_text("")
     # CONNECT
     
-    elif text.startswith("CONNECT"):
+    elif text.startswith("DIP: "):
+        dipentry.set_text(text[5:])
+        widget.set_text("")
+    elif text.startswith("DPORT: "):
+        dportentry.set_text(text[7:])
+        widget.set_text("")
+    
+    elif text == "CONNECT":
         
         global CONNECTED
         
@@ -294,17 +366,85 @@ def consoleinput(widget):
         
         widget.set_text("")
     
+    elif text.startswith("CONNECT TO: "):
+        
+        import time as thetime
+        thetime.sleep(2)
+        
+        found = False
+        for item in recvmach:
+        
+        
+            if text[len("CONNECT TO:")+1:] == item[item.find("[")+1:item.rfind("]")]:
+                
+                
+                
+                
+                
+                ip, port = item[item.rfind("]")+2:].split(" ")
+                dipentry.set_text(ip)
+                dportentry.set_text(port)
+                
+                ONuprefresh(True)
+                
+        if found == False:
+            Print("THERE IS NO SUCH NAME AS ["+text[len("CONNECT TO:")+1:]+"]", True)        
+        
+        import time as thetime
+        thetime.sleep(2)
+        
+    elif text.startswith("DESTINATION: "):
+        
+        dfolrerentry.set_text(text[len("DESTINATION: "):])
+    
+    elif text.startswith("GET: "):
+        
+        while DOWNLOADING == True: 
+            if DOWNLOADING == False:
+                break
+        
+        try:
+            for num, item in enumerate(dfiles):
+                url, name, lock, folder, percent = item
+                
+                if num == int(text[5:]):
+                    REQUEST_DOWLOAD(url)
+                
+        except:
+            raise
+            Print("SYNTAX ERROR (PROBABLY ARGUMENT IS NOT A NUMBER)", True)    
+            
+    
+    elif text == "EXIT":
+        main_quit(True)
+    
     elif text.startswith("HELP"):
         
         Print("HELP! \n"\
+             +"\nThe JYEXCHANGE since version 1.3 supports scripting\n"\
+             +"for that you can write a file with console commands listed\n"\
+             +"down. Similar to Bash / sh scripts. And save the file with an extension .jyes\n"\
+             +"\nTo run the .jyes scripts. You need to set it's path in the ternimal\n"\
+             +"such as [python jyexchenge.py /home/yourname/Desktop/yourscript.jyes]\n\n"\
+             +"ADD: argument     - add a path (file or folder) to the upload list\n"\
+             +"DEL: number       - remove the item from upload by it's number in the list\n"\
+             +"UPFILES           - output into console the list of the upload files\n"\
+             +"BNAME: argument   - Change Broadcast name\n"\
              +"SAY: argument     - sending message\n"\
+             +"DIP: argument     - changing Download IP for the connection\n"\
+             +"DPORT: argument   - changing Download PORT for the connection\n"\
              +"CONNECT           - connecting to IP, PORT specified at the top\n"\
+             +"CONNECT TO: argum - connection to specified username, recieved from broadcast\n"\
+             +"DESTINATION: argu - change the download folder\n"\
+             +"GET: number       - download a given item from the download list\n"\
              +"UPDATE            - update the software using github link\n"\
              +"SNAKE             - play snake (works just ones during runtime)\n"\
              +"PYTHON: argument  - executes python command and returns the value\n"\
              +"SAVE              - saving text from this console to .txt file at\n"\
              +"                    a directory specified for Dowloading.\n"\
-             +"SAVE TO: argument - saving text from this conlose to custom directory", "h" )
+             +"SAVE TO: argument - saving text from this conlose to custom directory"\
+             +"EXIT              - exit the software", "h" )
+             
         
         widget.set_text("")
     
@@ -335,7 +475,7 @@ def consoleinput(widget):
             return
         
         try:
-            Print( "PYTHON: "+str(eval(text[8:])), "m")
+            Print( "PYTHON: "+str(eval(text[8:])))
         except:
             Print("PYTHON: ERROR", True)
             raise
@@ -412,14 +552,54 @@ def sayyellow(widget):
     elif text.startswith("SAY: "):
         widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFFF00"))
     
-    elif text.startswith("CONNECT"):
+    elif text.startswith("EXIT"):
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FF0000"))
+    
+    elif text.startswith("DIP:"):
         widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
     
+    elif text.startswith("DPORT:"):
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+    
+    elif text.startswith("DESTINATION: "):
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+    
+    elif text == "CONNECT":
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+    elif text == "CONNECT TO:":
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+    
+    elif text.startswith("CONNECT TO: "):
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFFF00"))
+        
     elif text.startswith("HELP"):
         widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#2222FF"))
     
     elif text.startswith("UPDATE"):
         widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+        
+    elif text.startswith("UPFILES"):
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+    
+    elif text == "DEL:":
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+    
+    elif text.startswith("DEL: "):
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFFF00"))
+    
+    elif text == "ADD:":
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+    
+    elif text.startswith("ADD: "):
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFFF00"))
+    
+    elif text == "BNAME:":
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+    
+    elif text.startswith("BNAME: "):
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFFF00"))
+    
+        
     elif text.startswith("SNAKE"):
         widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
     
@@ -596,9 +776,9 @@ def on_updatelist(widget):
             elif i.startswith("!LNK "):
                 
                 link = i[i.find(" ")+1: i.find("[")-1]
-                print link
+                #print link
                 buttonname = i[i.find("[")+1: i.find("]")]
-                print buttonname
+                #print buttonname
                 
                 
                 com = "updateLNKbutton"+n+" = gtk.Button('"+buttonname+"')"
@@ -938,8 +1118,8 @@ def servering():
                                 ourdirlist = ourdirlist[1:]
                                 ourfilelist = ourfilelist[1:]
                                 
-                                print ourfilelist
-                                print
+                                #print ourfilelist
+                                #print
                                 
                                 theirdirlist = ""
                                 theirfilelist = ""
@@ -950,8 +1130,8 @@ def servering():
                                 for p in ourfilelist.split("\n"):
                                     theirfilelist = theirfilelist +"\n"+ p[ourdirlist.split("\n")[0].rfind("/"):]
                                  
-                                print theirfilelist
-                                print
+                                #print theirfilelist
+                                #print
                                 
                                 theirdirlist = theirdirlist[1:]
                                 
@@ -1016,7 +1196,7 @@ def servering():
                                             continue
                                     else:
                                         
-                                        print "SEVER BROKE BECAUSE FILE IS EMPTY"
+                                        #print "SEVER BROKE BECAUSE FILE IS EMPTY"
                                         continue
                                 Print("FOLDER FINISHED UPLOADING")
                                 
@@ -2142,7 +2322,7 @@ def recievebroadcast():
                 except:
                     raise
                 
-                print "\n\n", recvmach
+                #print "\n\n", recvmach
         
         
         
@@ -2239,7 +2419,7 @@ def Drec_thread(url, updating=False):
                     
                 
                 Print("RECIEVED FILE SIZE : "+SIZE)
-                print "RECIEVED FILE SIZE : "+SIZE
+                #print "RECIEVED FILE SIZE : "+SIZE
                 
                 if int(SIZE) != 0:
                 
@@ -2688,15 +2868,15 @@ def reloaddfiles(broadcast=False):
     
     global CONNECTED
     
-    print CONNECTED, "CONNECTED"
+    #print CONNECTED, "CONNECTED"
     
     if broadcast == True:
-        print "Called to resfresh by broadcasting"
+        #print "Called to resfresh by broadcasting"
         
         global dscroller
         global dfilesbox
         
-        print CONNECTED, "CONNECTED"
+        #print CONNECTED, "CONNECTED"
         
         if CONNECTED == False:
         
@@ -2764,10 +2944,10 @@ def showdcomputers():
         exec(com) in globals(), locals()
         
         labeltext = i[i.find("[")+1:i.rfind("]")]
-        if commands.getoutput("hostname -I") in i:
+        #if commands.getoutput("hostname -I") in i:
             
-            continue # TEMTORARELY UNTILL I FIGURE IT OUT
-            labeltext = labeltext + " [ THIS COMPUTER ]"
+            #continue # TEMTORARELY UNTILL I FIGURE IT OUT
+            #labeltext = labeltext + " [ THIS COMPUTER ]"
         
         
         com = "compbox"+n+".pack_start(gtk.Label(' "+labeltext.replace("'", "\"")+"'), False)"
@@ -3160,9 +3340,34 @@ def updatefunction(w=None):
         
         updwin.show_all()
 
+#os.system("clear")
 
 
-
+if sys.argv[-1].lower().endswith(".jyes"):
+          
+    def scriptopen():
+        script = open(sys.argv[-1], "r")
+        script = script.read()
+        
+        Print("\n\nEXECUTING SCRIPT ["+sys.argv[-1]+"]\n")
+        
+        for i in script.split("\n")[:-1]:
+            
+            while DOWNLOADING == True: 
+                if DOWNLOADING == False:
+                    break
+            
+            INPUT.set_text(i)
+            INPUT.activate()
+        Print("\n\nEND OF THE SCRIPT\n")
+        INPUT.set_text("")
+        
+        
+    try:
+        glib.timeout_add(100, scriptopen)
+    except:
+        raise
+    
 
 
 
