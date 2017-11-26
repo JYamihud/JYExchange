@@ -18,7 +18,7 @@ import sys
 
 
 
-VERSION = 1.3 # A software version for the updater
+VERSION = 1.4 # A software version for the updater
 
 
 
@@ -384,8 +384,12 @@ def consoleinput(widget):
                 ip, port = item[item.rfind("]")+2:].split(" ")
                 dipentry.set_text(ip)
                 dportentry.set_text(port)
+                found = True
+                
+                Print("CONNECTED SUCCESSFULY TO ["+text[len("CONNECT TO:")+1:]+"]")
                 
                 ONuprefresh(True)
+                
                 
         if found == False:
             Print("THERE IS NO SUCH NAME AS ["+text[len("CONNECT TO:")+1:]+"]", True)        
@@ -413,7 +417,29 @@ def consoleinput(widget):
         except:
             raise
             Print("SYNTAX ERROR (PROBABLY ARGUMENT IS NOT A NUMBER)", True)    
+    
+    elif text.startswith("WAIT FOR: "):
+        Print("WAITING FOR "+text[len("WAIT FOR: "):]+" ...")
+        
+        while gtk.events_pending():
+            gtk.main_iteration_do(False)
+        
+        
+        found = False
+        
+        while found == False:
             
+        
+            for item in recvmach:
+                
+                if text[len("WAIT FOR: "):] == item[item.find("[")+1:item.rfind("]")]:
+                    found = True
+                    
+                    Print ("THE NAME ["+text[len("WAIT FOR: "):]+"] IS FOUND") 
+        widget.set_text("")           
+              
+        
+        
     
     elif text == "EXIT":
         main_quit(True)
@@ -434,6 +460,7 @@ def consoleinput(widget):
              +"DIP: argument     - changing Download IP for the connection\n"\
              +"DPORT: argument   - changing Download PORT for the connection\n"\
              +"CONNECT           - connecting to IP, PORT specified at the top\n"\
+             +"WAIT FOR: argument- halt the system intil a particular name broadcasted\n"\
              +"CONNECT TO: argum - connection to specified username, recieved from broadcast\n"\
              +"DESTINATION: argu - change the download folder\n"\
              +"GET: number       - download a given item from the download list\n"\
@@ -580,6 +607,12 @@ def sayyellow(widget):
         
     elif text.startswith("UPFILES"):
         widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+    
+    elif text == "WAIT FOR:":
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
+    
+    elif text.startswith("WAIT FOR: "):
+        widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFFF00"))
     
     elif text == "DEL:":
         widget.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAA00"))
@@ -2413,7 +2446,7 @@ def Drec_thread(url, updating=False):
                 
                 client.send("REQUEST_SIZE")
                 
-                SIZE = client.recv(1024)
+                SIZE = client.recv(5000)
                 
                 
                     
@@ -2944,9 +2977,9 @@ def showdcomputers():
         exec(com) in globals(), locals()
         
         labeltext = i[i.find("[")+1:i.rfind("]")]
-        #if commands.getoutput("hostname -I") in i:
+        if commands.getoutput("hostname -I") in i:
             
-            #continue # TEMTORARELY UNTILL I FIGURE IT OUT
+            continue # TEMTORARELY UNTILL I FIGURE IT OUT
             #labeltext = labeltext + " [ THIS COMPUTER ]"
         
         
