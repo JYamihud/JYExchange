@@ -18,7 +18,7 @@ import sys
 
 
 
-VERSION = 1.4 # A software version for the updater
+VERSION = 1.41 # A software version for the updater
 
 
 
@@ -306,7 +306,10 @@ def consoleinput(widget):
             if ["file://"+text[5:], text[5:][text[5:].rfind("/")+1:]] not in upfiles:
                 upfiles.append(["file://"+text[5:], text[5:][text[5:].rfind("/")+1:], uplock])
             
-            refrashuploads()
+            
+            if not duringscript:
+            
+                refrashuploads()
         else:
             Print("PATH ["+text[5:]+"] DOES NOT EXIST", True)
         widget.set_text("")
@@ -3375,6 +3378,7 @@ def updatefunction(w=None):
 
 #os.system("clear")
 
+duringscript = False
 
 if sys.argv[-1].lower().endswith(".jyes"):
           
@@ -3383,6 +3387,9 @@ if sys.argv[-1].lower().endswith(".jyes"):
         script = script.read()
         
         Print("\n\nEXECUTING SCRIPT ["+sys.argv[-1]+"]\n")
+        
+        global duringscript
+        duringscript = True
         
         for i in script.split("\n")[:-1]:
             
@@ -3395,6 +3402,7 @@ if sys.argv[-1].lower().endswith(".jyes"):
         Print("\n\nEND OF THE SCRIPT\n")
         INPUT.set_text("")
         
+        duringscript = False
         
     try:
         glib.timeout_add(100, scriptopen)
