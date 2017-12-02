@@ -1,3 +1,10 @@
+1.41
+
+Optimized the adding feature for large amount of synchronized files from
+blender-orginizer, now it takes a second, not an internity.
+
+________________________________________________________________________
+
 1.4
 
 This update has a minor change to optimize it's work for
