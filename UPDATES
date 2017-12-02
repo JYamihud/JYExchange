@@ -1,11 +1,4 @@
-1.4
+1.41
 
-This update has a minor change to optimize it's work for
-the new blender-orinizer feature of synchronization
-
-new command is added ( WAIT FOR:) to make JYExchange do
-not move through the script untill a particular username
-appears at the broadcast
-
-you can get blender-orginizer using this link:
-!LNK https://github.com/JYamihud/blender-organizer [https://github.com/JYamihud/blender-organizer]
+Optimized the adding feature for large amount of synchronized files from
+blender-orginizer, now it takes a second, not an internity.
